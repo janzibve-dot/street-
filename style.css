@@ -7,248 +7,154 @@
     touch-action: none;
     -webkit-tap-highlight-color: transparent;
     user-select: none;
-}:root {
+}
+
+:root {
     --neon-cyan: #00f5ff;
     --neon-pink: #ff00ff;
     --neon-yellow: #ffff00;
     --neon-green: #00ff88;
     --neon-orange: #ff8800;
     --neon-red: #ff0044;
-}body {
+}
+
+body {
     font-family: 'Rajdhani', sans-serif;
     background: #000;
     overflow: hidden;
     height: 100vh;
     width: 100vw;
-}#gameContainer {
+}
+
+#gameContainer {
     position: relative;
     width: 100%;
     height: 100%;
     overflow: hidden;
-}#gameCanvas {
+}
+
+#gameCanvas {
     display: block;
     width: 100%;
     height: 100%;
-}#hud {
+}
+
+#hud {
     position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    padding: 15px;
+    top: 0; left: 0; right: 0;
+    padding: 10px 15px;
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
     pointer-events: none;
     z-index: 10;
-}.hud-left, .hud-right, .hud-center {
+}
+
+.hud-left, .hud-right, .hud-center {
     display: flex;
     flex-direction: column;
-    gap: 15px;
-}.hud-center {
+    gap: 8px;
+}
+
+.hud-center {
     position: absolute;
     left: 50%;
     transform: translateX(-50%);
     align-items: center;
-}.hud-panel {
-    background: rgba(0, 0, 0, 0.85);
+}
+
+.hud-panel {
+    background: rgba(0, 0, 0, 0.75);
+    border: 2px solid var(--neon-cyan);
+    border-radius: 8px;
+    padding: 8px 15px;
+    box-shadow: 0 0 15px rgba(0, 245, 255, 0.3), inset 0 0 15px rgba(0, 245, 255, 0.1);
+}
+
+.hud-label { font-size: 10px; color: var(--neon-cyan); text-transform: uppercase; letter-spacing: 2px; }
+.hud-value { font-family: 'Orbitron', monospace; font-size: 22px; font-weight: 900; color: white; }
+
+#speedometer {
+    width: 120px; height: 120px;
+    position: relative;
+    background: radial-gradient(circle, rgba(0,0,0,0.9) 0%, rgba(20,20,40,0.9) 100%);
     border: 3px solid var(--neon-cyan);
-    border-radius: 12px;
-    padding: 12px 20px;
-    box-shadow: 0 0 20px rgba(0, 245, 255, 0.4),
-                inset 0 0 20px rgba(0, 245, 255, 0.1);
-    backdrop-filter: blur(5px);
-    transition: transform 0.2s;
-}.large-panel {
-    min-width: 140px;
-    text-align: center;
-}.hud-label {
-    font-size: 12px;
-    color: var(--neon-cyan);
-    text-transform: uppercase;
-    letter-spacing: 2px;
-    margin-bottom: 5px;
-    font-weight: bold;
-}.hud-value {
-    font-family: 'Orbitron', monospace;
-    font-size: 28px;
-    font-weight: 900;
-    color: white;
-    text-shadow: 0 0 15px var(--neon-cyan);
-}.lives-display {
-    font-size: 24px;
-    letter-spacing: 5px;
-    text-shadow: 0 0 15px var(--neon-red);
-}#speedometer {
-    width: 140px;
-    height: 140px;
-    position: relative;
-    background: radial-gradient(circle, rgba(0,0,0,0.95) 0%, rgba(30,30,60,0.95) 100%);
-    border: 4px solid var(--neon-cyan);
     border-radius: 50%;
-    box-shadow: 0 0 40px rgba(0, 245, 255, 0.5),
-                inset 0 0 40px rgba(0, 245, 255, 0.2);
-}#speedValue {
+}
+
+#speedValue { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-family: 'Orbitron', monospace; font-size: 28px; font-weight: 900; color: white; }
+#speedUnit { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); font-size: 10px; color: var(--neon-cyan); }
+#speedNeedle { position: absolute; bottom: 50%; left: 50%; width: 3px; height: 45px; background: linear-gradient(to top, var(--neon-red), var(--neon-yellow)); transform-origin: bottom center; transform: translateX(-50%) rotate(-90deg); border-radius: 2px; }
+
+#fuelGauge { width: 150px; }
+#fuelBar { width: 100%; height: 20px; background: rgba(0, 0, 0, 0.5); border: 2px solid var(--neon-green); border-radius: 10px; overflow: hidden; position: relative; }
+#fuelFill { height: 100%; background: linear-gradient(90deg, var(--neon-red), var(--neon-yellow), var(--neon-green)); transition: width 0.3s; }
+#fuelText { font-family: 'Orbitron', monospace; font-size: 12px; color: white; text-align: center; margin-top: 4px; }
+
+#activeBonuses { display: flex; gap: 8px; flex-wrap: wrap; max-width: 200px; }
+.bonus-indicator { width: 40px; height: 40px; border-radius: 8px; display: flex; justify-content: center; align-items: center; font-size: 20px; position: relative; background: rgba(0,0,0,0.5); }
+.bonus-indicator .timer { position: absolute; bottom: -2px; left: 0; right: 0; height: 3px; background: rgba(255,255,255,0.3); }
+.bonus-indicator .timer-fill { height: 100%; background: white; transition: width 0.1s; }
+
+#mobileControls, #mobileWheelControls {
     position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    font-family: 'Orbitron', monospace;
-    font-size: 36px;
-    font-weight: 900;
-    color: white;
-}#speedUnit {
-    position: absolute;
-    bottom: 25px;
-    left: 50%;
-    transform: translateX(-50%);
-    font-size: 12px;
-    color: var(--neon-cyan);
-    letter-spacing: 1px;
-}#speedNeedle {
-    position: absolute;
-    bottom: 50%;
-    left: 50%;
-    width: 4px;
-    height: 55px;
-    background: linear-gradient(to top, var(--neon-red), var(--neon-yellow));
-    transform-origin: bottom center;
-    transform: translateX(-50%) rotate(-90deg);
-    border-radius: 2px;
-    box-shadow: 0 0 15px var(--neon-red);
-}#fuelBar {
-    width: 100%;
-    height: 25px;
-    background: rgba(0, 0, 0, 0.5);
-    border: 2px solid var(--neon-green);
-    border-radius: 12px;
-    overflow: hidden;
-    position: relative;
-    margin: 5px 0;
-}#fuelFill {
-    height: 100%;
-    background: linear-gradient(90deg, var(--neon-red), var(--neon-yellow), var(--neon-green));
-    transition: width 0.3s;
-    box-shadow: 0 0 20px var(--neon-green);
-}#fuelText {
-    font-family: 'Orbitron', monospace;
-    font-size: 14px;
-    color: white;
-    text-align: center;
-}#activeBonuses {
-    display: flex;
-    gap: 10px;
-    flex-wrap: wrap;
-    max-width: 250px;
-    justify-content: center;
-}.bonus-indicator {
-    width: 50px;
-    height: 50px;
-    border-radius: 10px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-size: 24px;
-    position: relative;
-    background-color: rgba(0,0,0,0.6);
-}.bonus-indicator .timer {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    height: 4px;
-    background: rgba(255,255,255,0.3);
-}.bonus-indicator .timer-fill {
-    height: 100%;
-    background: white;
-    transition: width 0.1s;
-}#mobileControls, #mobileWheelControls {
-    display: none; 
-}#mobileControls {
-    position: absolute;
-    bottom: 20px;
-    left: 20px;
-    right: 20px;
-    height: 180px;
+    bottom: 0; left: 0; right: 0;
+    height: 30%;
     pointer-events: auto;
     z-index: 20;
     display: none;
-    justify-content: space-between;
-    gap: 20px;
-}.touch-btn {
-    flex: 1;
-    background: rgba(0, 245, 255, 0.15);
-    border: 3px solid rgba(0, 245, 255, 0.4);
-    border-radius: 20px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    backdrop-filter: blur(5px);
-}.touch-brake-btn {
-    width: 100px;
-    background: rgba(255, 0, 68, 0.15);
-    border: 3px solid rgba(255, 0, 68, 0.4);
-    border-radius: 20px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    backdrop-filter: blur(5px);
-}.touch-icon { font-size: 80px; color: white; text-shadow: 0 0 20px var(--neon-cyan); }.touch-icon-small { font-size: 50px; color: white; text-shadow: 0 0 20px var(--neon-red); }#virtualWheelBase {
+}
+
+.touch-zone {
     position: absolute;
-    bottom: 20px;
-    left: 20px;
-    width: 140px;
-    height: 140px;
-    background: rgba(0, 0, 0, 0.5);
-    border: 2px solid var(--neon-cyan);
-    border-radius: 50%;
-    display: none;
-}#virtualWheel {
-    width: 50px;
-    height: 50px;
-    background: var(--neon-cyan);
-    border-radius: 50%;
+    bottom: 0; height: 100%; width: 35%;
+    display: flex; justify-content: center; align-items: center;
+    background: rgba(0, 245, 255, 0.05);
+    opacity: 0.3;
+}
+.touch-zone:active { opacity: 0.6; background: rgba(0, 245, 255, 0.2); }
+#touchLeft { left: 0; border-right: 1px solid rgba(0,245,255,0.2); }
+#touchRight { right: 0; border-left: 1px solid rgba(0,245,255,0.2); }
+
+.touch-brake {
     position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-}#wheelBrake {
-    position: absolute;
-    bottom: 20px;
-    right: 20px;
-    width: 100px;
-    height: 100px;
-    border-radius: 50%;
-    border: 2px solid var(--neon-red);
-    background: rgba(255, 0, 68, 0.15);
-    display: none;
-    justify-content: center;
-    align-items: center;
-}.screen {
-    position: absolute;
-    top: 0; left: 0; right: 0; bottom: 0;
-    display: flex; flex-direction: column; justify-content: center; align-items: center;
-    background: radial-gradient(circle, rgba(20,20,40,0.98) 0%, rgba(0,0,0,1) 100%);
-    z-index: 100; opacity: 0; pointer-events: none; transition: opacity 0.3s;
-}.screen.active { opacity: 1; pointer-events: auto; }.game-title {
-    font-family: 'Orbitron', monospace; font-size: clamp(40px, 9vw, 80px); font-weight: 900; color: white;
-    text-shadow: 0 0 30px var(--neon-cyan), 0 0 60px var(--neon-pink); letter-spacing: 6px; margin-bottom: 5px; text-align: center;
-}.subtitle { font-size: clamp(14px, 3.5vw, 22px); color: var(--neon-cyan); letter-spacing: 10px; text-transform: uppercase; margin-bottom: 40px; }.record-display {
-    background: rgba(255, 215, 0, 0.1); border: 2px solid gold; border-radius: 15px; padding: 20px 40px; margin-bottom: 40px; text-align: center;
-}.record-value { font-family: 'Orbitron', monospace; font-size: 42px; font-weight: 900; color: gold; }.btn {
-    font-family: 'Orbitron', monospace; font-size: clamp(18px, 4vw, 24px); font-weight: 800; padding: 18px 60px;
-    margin: 12px; border-radius: 50px; background: rgba(0, 245, 255, 0.1); color: white; cursor: pointer;
-    text-transform: uppercase; letter-spacing: 3px; border: 2px solid var(--neon-cyan);
-}.btn-secondary { border-color: var(--neon-pink); font-size: 14px; padding: 12px 30px; }.menu-buttons { display: flex; flex-direction: column; gap: 15px; align-items: center; width: 100%; }.menu-row { display: flex; gap: 15px; justify-content: center; flex-wrap: wrap; }.lang-switch { position: absolute; top: 30px; right: 30px; display: flex; gap: 10px; }.btn-lang {
-    background: transparent; border: 2px solid var(--neon-cyan); color: var(--neon-cyan); padding: 8px 15px; cursor: pointer;
-}.btn-lang.active { background: var(--neon-cyan); color: black; }.controls-info {
-    margin-top: 40px; padding: 20px; background: rgba(255, 255, 255, 0.05); border-radius: 15px; border: 1px solid rgba(255, 255, 255, 0.1); text-align: center;
-}.key {
-    display: inline-block; padding: 4px 10px; background: rgba(0, 245, 255, 0.15); border: 1px solid var(--neon-cyan); border-radius: 6px; margin: 0 4px;
-}.game-over-title { font-family: 'Orbitron', monospace; font-size: clamp(28px, 7vw, 48px); color: var(--neon-red); margin-bottom: 20px; }.final-score { font-family: 'Orbitron', monospace; font-size: clamp(40px, 10vw, 72px); color: var(--neon-yellow); }.stats-row { display: flex; gap: 40px; margin: 25px 0; flex-wrap: wrap; justify-content: center; }
+    bottom: 0; left: 35%; right: 35%; height: 100%;
+    display: flex; justify-content: center; align-items: center;
+    background: rgba(255, 0, 68, 0.1);
+    opacity: 0.3;
+}
+.touch-brake:active { opacity: 0.7; background: rgba(255, 0, 68, 0.3); }
+.touch-icon { font-size: 40px; color: white; }
+
+#virtualWheelBase { position: absolute; bottom: 20px; left: 20px; width: 120px; height: 120px; background: rgba(0, 0, 0, 0.5); border: 2px solid var(--neon-cyan); border-radius: 50%; }
+#virtualWheel { width: 40px; height: 40px; background: var(--neon-cyan); border-radius: 50%; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); }
+#wheelBrake { left: auto; right: 20px; width: 100px; height: 100px; bottom: 20px; border-radius: 50%; border: 2px solid var(--neon-red); }
+
+.screen { position: absolute; top: 0; left: 0; right: 0; bottom: 0; display: flex; flex-direction: column; justify-content: center; align-items: center; background: radial-gradient(circle, rgba(20,20,40,0.95) 0%, rgba(0,0,0,1) 100%); z-index: 100; opacity: 0; pointer-events: none; transition: opacity 0.3s; }
+.screen.active { opacity: 1; pointer-events: auto; }
+.game-title { font-family: 'Orbitron', monospace; font-size: clamp(40px, 9vw, 80px); font-weight: 900; color: white; text-align: center; }
+.subtitle { font-size: clamp(14px, 3.5vw, 22px); color: var(--neon-cyan); text-transform: uppercase; margin-bottom: 40px; }
+.record-display { border: 2px solid gold; border-radius: 15px; padding: 20px 40px; margin-bottom: 40px; text-align: center; }
+.record-value { font-family: 'Orbitron', monospace; font-size: 42px; color: gold; }
+
+.btn { font-family: 'Orbitron', monospace; font-size: clamp(18px, 4vw, 24px); padding: 18px 60px; margin: 12px; border-radius: 50px; background: rgba(0, 245, 255, 0.1); color: white; cursor: pointer; border: 2px solid var(--neon-cyan); }
+.btn:hover { background: var(--neon-cyan); color: #000; }
+.btn-secondary { border-color: var(--neon-pink); font-size: 14px; padding: 12px 30px; }
+.menu-buttons { display: flex; flex-direction: column; align-items: center; width: 100%; }
+.menu-row { display: flex; gap: 15px; justify-content: center; flex-wrap: wrap; }
+.lang-switch { position: absolute; top: 30px; right: 30px; display: flex; gap: 10px; }
+.btn-lang { background: transparent; border: 2px solid var(--neon-cyan); color: var(--neon-cyan); padding: 8px 15px; border-radius: 5px; }
+.btn-lang.active { background: var(--neon-cyan); color: black; }
+
+.controls-info { margin-top: 40px; padding: 20px; background: rgba(255, 255, 255, 0.05); border-radius: 15px; text-align: center; }
+.key { display: inline-block; padding: 4px 10px; background: rgba(0, 245, 255, 0.15); border: 1px solid var(--neon-cyan); border-radius: 6px; font-size: 12px; margin: 0 4px; }
+
+.game-over-title { font-family: 'Orbitron', monospace; font-size: clamp(28px, 7vw, 48px); color: var(--neon-red); margin-bottom: 20px; }
+.final-score { font-family: 'Orbitron', monospace; font-size: clamp(40px, 10vw, 72px); color: var(--neon-yellow); }
+.stats-row { display: flex; gap: 40px; margin: 25px 0; justify-content: center; }
 
 @media (max-width: 768px) {
-    #speedometer { width: 100px; height: 100px; }
-    #speedValue { font-size: 24px; }
+    #speedometer { width: 90px; height: 90px; }
     #pcControls { display: none; }
-    #mobileControls { display: flex; }
+    #mobileControls { display: block; }
 }

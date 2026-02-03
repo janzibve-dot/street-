@@ -4,7 +4,7 @@
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    touch-action: none; /* Важно для мобильных */
+    touch-action: none;
     -webkit-tap-highlight-color: transparent;
     user-select: none;
 }
@@ -256,7 +256,6 @@ body {
     z-index: 20;
 }
 
-/* Default Touch Zones */
 .touch-zone {
     position: absolute;
     bottom: 0;
@@ -348,7 +347,7 @@ body {
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    background: rgba(0, 0, 0, 0.92);
+    background: radial-gradient(circle, rgba(20,20,40,0.95) 0%, rgba(0,0,0,1) 100%);
     z-index: 100;
     opacity: 0;
     pointer-events: none;
@@ -362,13 +361,13 @@ body {
 
 .game-title {
     font-family: 'Orbitron', monospace;
-    font-size: clamp(32px, 8vw, 64px);
+    font-size: clamp(40px, 9vw, 80px);
     font-weight: 900;
     color: white;
     text-shadow: 0 0 30px var(--neon-cyan),
                  0 0 60px var(--neon-pink);
-    letter-spacing: 4px;
-    margin-bottom: 10px;
+    letter-spacing: 6px;
+    margin-bottom: 5px;
     text-align: center;
     animation: titleGlow 2s ease-in-out infinite;
 }
@@ -379,142 +378,164 @@ body {
 }
 
 .subtitle {
-    font-size: clamp(12px, 3vw, 18px);
+    font-size: clamp(14px, 3.5vw, 22px);
     color: var(--neon-cyan);
-    letter-spacing: 8px;
+    letter-spacing: 10px;
     text-transform: uppercase;
-    margin-bottom: 30px;
+    margin-bottom: 40px;
 }
 
 .record-display {
     background: rgba(255, 215, 0, 0.1);
     border: 2px solid gold;
-    border-radius: 10px;
-    padding: 15px 30px;
-    margin-bottom: 30px;
+    border-radius: 15px;
+    padding: 20px 40px;
+    margin-bottom: 40px;
     text-align: center;
+    box-shadow: 0 0 30px rgba(255, 215, 0, 0.1);
 }
 
 .record-label {
-    font-size: 12px;
+    font-size: 14px;
     color: gold;
-    letter-spacing: 3px;
+    letter-spacing: 4px;
     text-transform: uppercase;
+    margin-bottom: 5px;
 }
 
 .record-value {
     font-family: 'Orbitron', monospace;
-    font-size: 32px;
+    font-size: 42px;
     font-weight: 900;
     color: gold;
     text-shadow: 0 0 20px gold;
 }
 
+/* Updated Attractive Buttons */
 .btn {
     font-family: 'Orbitron', monospace;
-    font-size: clamp(14px, 3vw, 20px);
-    font-weight: 700;
-    padding: 12px 40px;
-    margin: 8px;
-    border: 2px solid var(--neon-cyan);
-    background: transparent;
+    font-size: clamp(18px, 4vw, 24px);
+    font-weight: 800;
+    padding: 18px 60px;
+    margin: 12px;
+    border: none;
+    border-radius: 50px; /* Rounded corners */
+    background: linear-gradient(90deg, transparent 0%, rgba(0, 245, 255, 0.1) 50%, transparent 100%);
     color: white;
     cursor: pointer;
     text-transform: uppercase;
-    letter-spacing: 2px;
-    transition: all 0.2s;
-    box-shadow: 0 0 15px rgba(0, 245, 255, 0.3);
+    letter-spacing: 3px;
+    transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    position: relative;
+    overflow: hidden;
+    border: 2px solid var(--neon-cyan);
+    box-shadow: 0 0 15px rgba(0, 245, 255, 0.2), inset 0 0 20px rgba(0, 245, 255, 0.1);
 }
 
-.btn:hover, .btn:active {
+.btn:hover {
     background: var(--neon-cyan);
     color: #000;
-    box-shadow: 0 0 30px rgba(0, 245, 255, 0.6);
-    transform: scale(1.05);
+    transform: scale(1.1) translateY(-3px);
+    box-shadow: 0 0 40px rgba(0, 245, 255, 0.8);
+    letter-spacing: 5px;
+}
+
+.btn:active {
+    transform: scale(0.95);
 }
 
 .btn-secondary {
     border-color: var(--neon-pink);
-    box-shadow: 0 0 15px rgba(255, 0, 255, 0.3);
+    color: #fff;
+    font-size: 14px;
+    padding: 12px 30px;
+    background: linear-gradient(90deg, transparent 0%, rgba(255, 0, 255, 0.1) 50%, transparent 100%);
+    box-shadow: 0 0 15px rgba(255, 0, 255, 0.2), inset 0 0 20px rgba(255, 0, 255, 0.1);
 }
 
 .btn-secondary:hover {
     background: var(--neon-pink);
-    box-shadow: 0 0 30px rgba(255, 0, 255, 0.6);
+    color: #fff;
+    box-shadow: 0 0 40px rgba(255, 0, 255, 0.8);
 }
 
 .menu-buttons {
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 15px;
     align-items: center;
+    width: 100%;
 }
 
 .menu-row {
     display: flex;
-    gap: 10px;
-}
-
-.btn-small {
-    padding: 10px 20px;
-    font-size: 12px;
+    gap: 15px;
+    justify-content: center;
+    flex-wrap: wrap;
 }
 
 .lang-switch {
     position: absolute;
-    top: 20px;
-    right: 20px;
+    top: 30px;
+    right: 30px;
     display: flex;
-    gap: 5px;
+    gap: 10px;
 }
 
 .btn-lang {
     background: transparent;
-    border: 1px solid var(--neon-cyan);
+    border: 2px solid var(--neon-cyan);
     color: var(--neon-cyan);
-    padding: 5px 10px;
+    padding: 8px 15px;
     cursor: pointer;
     font-family: 'Rajdhani', sans-serif;
     font-weight: bold;
+    font-size: 16px;
+    border-radius: 5px;
+    transition: all 0.2s;
 }
 
 .btn-lang.active {
     background: var(--neon-cyan);
     color: black;
+    box-shadow: 0 0 15px var(--neon-cyan);
 }
 
 /* Controls Info */
 .controls-info {
-    margin-top: 25px;
-    padding: 15px;
+    margin-top: 40px;
+    padding: 20px;
     background: rgba(255, 255, 255, 0.05);
-    border-radius: 8px;
+    border-radius: 15px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
     max-width: 90%;
     text-align: center;
 }
 
 .controls-info h3 {
     color: var(--neon-pink);
-    font-size: 14px;
-    margin-bottom: 8px;
-    letter-spacing: 2px;
+    font-size: 16px;
+    margin-bottom: 12px;
+    letter-spacing: 3px;
+    text-shadow: 0 0 10px var(--neon-pink);
 }
 
 .controls-info p {
-    color: rgba(255, 255, 255, 0.7);
-    font-size: 12px;
-    line-height: 1.6;
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 14px;
+    line-height: 1.8;
 }
 
 .key {
     display: inline-block;
-    padding: 2px 8px;
-    background: rgba(0, 245, 255, 0.2);
+    padding: 4px 10px;
+    background: rgba(0, 245, 255, 0.15);
     border: 1px solid var(--neon-cyan);
-    border-radius: 4px;
+    border-radius: 6px;
     font-family: 'Orbitron', monospace;
-    font-size: 11px;
-    margin: 0 2px;
+    font-size: 12px;
+    margin: 0 4px;
+    box-shadow: 0 0 5px rgba(0, 245, 255, 0.2);
 }
 
 /* Game Over */
@@ -545,9 +566,10 @@ body {
 .new-record {
     color: gold;
     font-family: 'Orbitron', monospace;
-    font-size: 18px;
+    font-size: 24px;
     animation: newRecordPulse 0.5s infinite;
-    margin: 10px 0;
+    margin: 15px 0;
+    text-shadow: 0 0 15px gold;
 }
 
 @keyframes newRecordPulse {
@@ -557,8 +579,8 @@ body {
 
 .stats-row {
     display: flex;
-    gap: 30px;
-    margin: 15px 0;
+    gap: 40px;
+    margin: 25px 0;
     flex-wrap: wrap;
     justify-content: center;
 }
@@ -568,15 +590,16 @@ body {
 }
 
 .stat-label {
-    font-size: 11px;
+    font-size: 12px;
     color: var(--neon-cyan);
     text-transform: uppercase;
-    letter-spacing: 1px;
+    letter-spacing: 2px;
+    margin-bottom: 5px;
 }
 
 .stat-value {
     font-family: 'Orbitron', monospace;
-    font-size: 24px;
+    font-size: 28px;
     font-weight: 700;
     color: white;
 }
@@ -591,6 +614,8 @@ body {
     .hud-value { font-size: 18px; }
     .hud-label { font-size: 9px; }
     #pcControls { display: none; }
+    .btn { padding: 15px 40px; font-size: 18px; }
+    .game-title { font-size: 40px; }
 }
 
 @media (orientation: landscape) and (max-height: 500px) {

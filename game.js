@@ -120,9 +120,9 @@ const car = {
     brakeForce: 1.5,
     handbrakeForce: 3.5,
     turnSpeed: 0,
-    maxTurnSpeed: 12,    // Увеличено с 8 (быстрее поворот)
-    turnAccel: 0.85,     // Увеличено с 0.5 (резче реакция)
-    friction: 0.90,      // Уменьшено с 0.94 (меньше инерции, точнее управление)
+    maxTurnSpeed: 15,    // Было 12, стало 15 (еще быстрее)
+    turnAccel: 1.0,      // Было 0.85, стало 1.0 (мгновенный отклик)
+    friction: 0.90,
     tilt: 0
 };
 
@@ -137,7 +137,7 @@ const fuel = {
 
 // ============== ROAD ==============
 const road = {
-    width: 500,
+    width: 600, // Было 500, стало 600 (дорога шире)
     lanes: 5,
     segments: [],
     segmentLength: 200,
@@ -203,7 +203,8 @@ function updateRecordDisplay() {
 // ============== INITIALIZE ==============
 function init() {
     car.x = canvas.width / 2;
-    car.y = canvas.height * 0.72;
+    // Сдвинули машину вниз (0.82 вместо 0.72)
+    car.y = canvas.height * 0.82; 
     car.speed = 0;
     car.turnSpeed = 0;
     car.tilt = 0;
@@ -229,7 +230,7 @@ function init() {
     setMobileControls(game.mobileMode);
 }
 
-// ============== SPAWN SYSTEM (UPDATED) ==============
+// ============== SPAWN SYSTEM ==============
 let spawnTimer = 0;
 const spawnInterval = 1000;
 
@@ -237,10 +238,7 @@ function spawnObjects() {
     const roadLeft = (canvas.width - road.width) / 2;
     const laneWidth = road.width / road.lanes;
     
-    // Определяем количество препятствий (максимум 2 за раз, но разнесенных по Y)
-    // Чтобы не было стены, мы спавним их "лесенкой"
     const numObstacles = (game.difficulty > 2 && Math.random() < 0.3) ? 2 : 1;
-    
     let usedLanes = [];
 
     for (let i = 0; i < numObstacles; i++) {
@@ -252,14 +250,11 @@ function spawnObjects() {
         } while (usedLanes.includes(lane) && attempts < 10);
         usedLanes.push(lane);
 
-        // Вертикальный отступ: первый сразу, второй через 350px (минимум 3 машины)
         const verticalOffset = i * -350; 
 
-        // Выбор типа
         const availableTypes = obstacleTypes.filter((t, idx) => idx <= 2 + game.difficulty);
         const type = availableTypes[Math.floor(Math.random() * availableTypes.length)];
         
-        // Поведение
         let behavior = 'straight';
         const behaviorRoll = Math.random();
         if (behaviorRoll < 0.2) behavior = 'zigzag';
@@ -267,7 +262,7 @@ function spawnObjects() {
 
         obstacles.push({
             x: roadLeft + lane * laneWidth + laneWidth / 2,
-            y: -300 - Math.random() * 50 + verticalOffset, // Добавлен отступ
+            y: -300 - Math.random() * 50 + verticalOffset,
             z: 0,
             ...type,
             speedMod: type.moving ? (type.slow ? -0.1 : 0.1 + Math.random() * 0.2) : 0,
@@ -278,12 +273,11 @@ function spawnObjects() {
         });
     }
     
-    // Бонусы
     if (Math.random() < 0.5) {
         let bonusLane;
         do {
             bonusLane = Math.floor(Math.random() * road.lanes);
-        } while (usedLanes.includes(bonusLane)); // Стараемся не ставить в занятую полосу
+        } while (usedLanes.includes(bonusLane));
         
         let type;
         if (Math.random() < 0.6) {
@@ -311,19 +305,16 @@ function update(dt) {
     
     const deltaTime = Math.min(dt, 50);
     
-    // Slow-mo
     let timeScale = 1;
     if (hasActiveBonus('slowmo')) {
         timeScale = 0.5;
     }
     
-    // Boost
     let speedMultiplier = 1;
     if (hasActiveBonus('boost')) {
         speedMultiplier = 1.5;
     }
     
-    // INPUT HANDLING
     let gas = keys.up;
     let turnLeft = keys.left;
     let turnRight = keys.right;
@@ -342,7 +333,6 @@ function update(dt) {
         }
     }
 
-    // Car physics
     if (gas) {
         car.speed = Math.min(car.speed + car.acceleration * speedMultiplier, car.maxSpeed * speedMultiplier);
     }
@@ -356,7 +346,6 @@ function update(dt) {
         car.speed = Math.max(car.speed - car.deceleration, 30);
     }
     
-    // Turning
     const turnMultiplier = hasActiveBonus('slippery') ? 0.3 : 1;
     
     if (game.mobileMode !== 'wheel' || !wheelInput.active) {
@@ -419,7 +408,8 @@ function update(dt) {
     const magnetActive = hasActiveBonus('magnet');
     
     // Update obstacles
-    const baseSpeed = 4 + game.difficulty * 1.5;
+    // Уменьшили базовую скорость с 4 до 2.
+    const baseSpeed = 2 + game.difficulty * 1.0;
     
     for (let i = obstacles.length - 1; i >= 0; i--) {
         const obs = obstacles[i];

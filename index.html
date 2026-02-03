@@ -12,11 +12,11 @@
         
         <div id="hud">
             <div class="hud-left">
-                <div class="hud-panel">
+                <div class="hud-panel large-panel">
                     <div class="hud-label" data-lang="distance">Дистанция</div>
                     <div class="hud-value" id="distance">0.0 km</div>
                 </div>
-                <div class="hud-panel" id="fuelGauge">
+                <div class="hud-panel large-panel" id="fuelGauge">
                     <div class="hud-label" data-lang="fuel">⛽ Топливо</div>
                     <div id="fuelBar">
                         <div id="fuelFill" style="width: 100%"></div>
@@ -35,22 +35,26 @@
             </div>
             
             <div class="hud-right">
-                <div class="hud-panel">
+                <div class="hud-panel large-panel">
                     <div class="hud-label" data-lang="record">🏆 Рекорд</div>
                     <div class="hud-value" id="recordDisplay">0.0 km</div>
+                </div>
+                <div class="hud-panel large-panel" style="border-color: var(--neon-red);">
+                    <div class="hud-label">ЖИЗНИ</div>
+                    <div class="lives-display" id="livesDisplay">❤️❤️❤️</div>
                 </div>
             </div>
         </div>
         
         <div id="mobileControls" class="controls-touch">
-            <div class="touch-zone" id="touchLeft">
+            <div class="touch-btn" id="touchLeft">
                 <span class="touch-icon">◀</span>
             </div>
-            <div class="touch-zone" id="touchRight">
-                <span class="touch-icon">▶</span>
+            <div class="touch-brake-btn" id="touchBrake">
+                <span class="touch-icon-small">🛑</span>
             </div>
-            <div class="touch-brake" id="touchBrake">
-                <span class="touch-icon">🛑</span>
+            <div class="touch-btn" id="touchRight">
+                <span class="touch-icon">▶</span>
             </div>
         </div>
 

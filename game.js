@@ -356,7 +356,17 @@ function init() {
     
     updateRecordDisplay();
     updateLivesDisplay();
-    setMobileControls(game.mobileMode);
+    
+    // Проверка устройства
+    if (isMobile) {
+        setMobileControls(game.mobileMode);
+        document.getElementById('controlModeBtn').style.display = 'inline-block';
+    } else {
+        // На ПК скрываем мобильные контроллеры и кнопку переключения
+        document.getElementById('mobileControls').style.display = 'none';
+        document.getElementById('mobileWheelControls').style.display = 'none';
+        document.getElementById('controlModeBtn').style.display = 'none';
+    }
 }
 
 function updateLivesDisplay() {

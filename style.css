@@ -236,6 +236,11 @@ body {
 }
 
 /* NEW MOBILE CONTROLS (BIG BUTTONS) */
+/* Скрыты по умолчанию, включаются через JS если isMobile */
+#mobileControls, #mobileWheelControls {
+    display: none; 
+}
+
 #mobileControls {
     position: absolute;
     bottom: 20px;
@@ -244,7 +249,6 @@ body {
     height: 180px;
     pointer-events: auto;
     z-index: 20;
-    display: flex;
     justify-content: space-between;
     gap: 20px;
 }
@@ -320,6 +324,20 @@ body {
     left: 50%;
     transform: translate(-50%, -50%);
     box-shadow: 0 0 15px var(--neon-cyan);
+}
+
+#wheelBrake {
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    border: 2px solid var(--neon-red);
+    background: rgba(255, 0, 68, 0.15);
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 /* Screens Styles */
@@ -489,7 +507,6 @@ body {
     .btn { padding: 15px 40px; font-size: 18px; }
     .lives-display { font-size: 18px; }
     .touch-icon { font-size: 60px; }
-    #mobileControls { height: 140px; }
 }
 
 @media (orientation: landscape) and (max-height: 500px) {
@@ -497,7 +514,6 @@ body {
     #speedometer { width: 80px; height: 80px; }
     #speedValue { font-size: 18px; }
     #speedNeedle { height: 30px; }
-    #mobileControls, #mobileWheelControls { height: 40%; }
     .touch-icon { font-size: 40px; }
     .hud-panel { padding: 5px 10px; }
 }

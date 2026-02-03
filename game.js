@@ -1,3 +1,131 @@
+// ============== AUDIO SYSTEM (SYNTHESIZER) ==============
+class AudioController {
+    constructor() {
+        this.ctx = null;
+        this.enabled = true;
+        this.engineOsc = null;
+        this.engineGain = null;
+        this.initialized = false;
+    }
+
+    init() {
+        if (this.initialized) return;
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        this.ctx = new AudioContext();
+        this.initialized = true;
+        
+        // Setup engine sound loop
+        this.engineOsc = this.ctx.createOscillator();
+        this.engineGain = this.ctx.createGain();
+        this.engineOsc.type = 'sawtooth';
+        this.engineOsc.frequency.value = 50;
+        this.engineGain.gain.value = 0;
+        this.engineOsc.connect(this.engineGain);
+        this.engineGain.connect(this.ctx.destination);
+        this.engineOsc.start();
+    }
+
+    resume() {
+        if (this.ctx && this.ctx.state === 'suspended') {
+            this.ctx.resume();
+        }
+    }
+
+    toggle() {
+        this.enabled = !this.enabled;
+        if (!this.enabled && this.engineGain) {
+            this.engineGain.gain.setTargetAtTime(0, this.ctx.currentTime, 0.1);
+        }
+        return this.enabled;
+    }
+
+    playTone(freq, type, duration, vol = 0.1) {
+        if (!this.enabled || !this.ctx) return;
+        this.resume();
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+        gain.gain.setValueAtTime(vol, this.ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + duration);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start();
+        osc.stop(this.ctx.currentTime + duration);
+    }
+
+    playNoise(duration, vol = 0.5) {
+        if (!this.enabled || !this.ctx) return;
+        this.resume();
+        const bufferSize = this.ctx.sampleRate * duration;
+        const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+        const data = buffer.getChannelData(0);
+        for (let i = 0; i < bufferSize; i++) {
+            data[i] = Math.random() * 2 - 1;
+        }
+        const noise = this.ctx.createBufferSource();
+        noise.buffer = buffer;
+        const gain = this.ctx.createGain();
+        gain.gain.setValueAtTime(vol, this.ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + duration);
+        noise.connect(gain);
+        gain.connect(this.ctx.destination);
+        noise.start();
+    }
+
+    // --- GAME SOUNDS ---
+    playClick() { this.playTone(800, 'sine', 0.1, 0.1); }
+    playHover() { this.playTone(400, 'triangle', 0.05, 0.05); }
+    
+    playStart() {
+        if (!this.enabled || !this.ctx) return;
+        this.playTone(200, 'sawtooth', 0.5, 0.2);
+        setTimeout(() => this.playTone(400, 'sawtooth', 0.5, 0.2), 200);
+        setTimeout(() => this.playTone(600, 'sawtooth', 1.0, 0.2), 400);
+    }
+
+    playBonus(type) {
+        if (!this.enabled) return;
+        if (type.startsWith('fuel')) {
+            this.playTone(880, 'sine', 0.2, 0.1);
+            setTimeout(() => this.playTone(1100, 'sine', 0.2, 0.1), 100);
+        } else {
+            this.playTone(1200, 'square', 0.3, 0.05);
+            setTimeout(() => this.playTone(1800, 'square', 0.4, 0.05), 100);
+        }
+    }
+
+    playCrash() {
+        if (!this.enabled) return;
+        this.playNoise(0.5, 0.5);
+        this.playTone(100, 'sawtooth', 0.5, 0.4);
+    }
+
+    updateEngine(speed, maxSpeed) {
+        if (!this.enabled || !this.ctx || !this.engineOsc) return;
+        
+        // Pitch modulation
+        const minFreq = 60;
+        const maxFreq = 200;
+        const ratio = Math.min(1, speed / maxSpeed);
+        const targetFreq = minFreq + (maxFreq - minFreq) * ratio;
+        
+        this.engineOsc.frequency.setTargetAtTime(targetFreq, this.ctx.currentTime, 0.1);
+        
+        // Volume modulation (idle rumble vs high rev)
+        const targetVol = (speed > 10) ? 0.08 : 0.03;
+        this.engineGain.gain.setTargetAtTime(targetVol, this.ctx.currentTime, 0.1);
+    }
+    
+    stopEngine() {
+        if (this.engineGain) {
+            this.engineGain.gain.setTargetAtTime(0, this.ctx.currentTime, 0.2);
+        }
+    }
+}
+
+const audio = new AudioController();
+
 // ============== CANVAS SETUP ==============
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
@@ -89,8 +217,8 @@ function setLanguage(lang) {
     updateSoundBtnText();
 }
 
-document.getElementById('langRu').addEventListener('click', () => setLanguage('ru'));
-document.getElementById('langEn').addEventListener('click', () => setLanguage('en'));
+document.getElementById('langRu').addEventListener('click', () => { audio.playClick(); setLanguage('ru'); });
+document.getElementById('langEn').addEventListener('click', () => { audio.playClick(); setLanguage('en'); });
 
 // ============== GAME STATE ==============
 const game = {
@@ -102,7 +230,6 @@ const game = {
     cameraShake: 0,
     cameraOffsetY: 0,
     worldSpeed: 0,
-    soundEnabled: true,
     mobileMode: 'touch'
 };
 
@@ -120,9 +247,10 @@ const car = {
     brakeForce: 1.5,
     handbrakeForce: 3.5,
     turnSpeed: 0,
-    maxTurnSpeed: 15,    // Было 12, стало 15 (еще быстрее)
-    turnAccel: 1.0,      // Было 0.85, стало 1.0 (мгновенный отклик)
-    friction: 0.90,
+    // ЕЩЁ БЫСТРЕЕ И РЕЗЧЕ:
+    maxTurnSpeed: 19, 
+    turnAccel: 1.3,
+    friction: 0.88,
     tilt: 0
 };
 
@@ -137,7 +265,7 @@ const fuel = {
 
 // ============== ROAD ==============
 const road = {
-    width: 600, // Было 500, стало 600 (дорога шире)
+    width: 600,
     lanes: 5,
     segments: [],
     segmentLength: 200,
@@ -202,8 +330,8 @@ function updateRecordDisplay() {
 
 // ============== INITIALIZE ==============
 function init() {
+    audio.init(); // Init audio context
     car.x = canvas.width / 2;
-    // Сдвинули машину вниз (0.82 вместо 0.72)
     car.y = canvas.height * 0.82; 
     car.speed = 0;
     car.turnSpeed = 0;
@@ -302,6 +430,9 @@ function spawnObjects() {
 // ============== UPDATE ==============
 function update(dt) {
     if (game.state !== 'playing') return;
+    
+    // Update audio
+    audio.updateEngine(car.speed, car.maxSpeed);
     
     const deltaTime = Math.min(dt, 50);
     
@@ -408,8 +539,8 @@ function update(dt) {
     const magnetActive = hasActiveBonus('magnet');
     
     // Update obstacles
-    // Уменьшили базовую скорость с 4 до 2.
-    const baseSpeed = 2 + game.difficulty * 1.0;
+    // ЗАМЕДЛЕНО ЕЩЕ НЕМНОГО (1.5 + difficulty)
+    const baseSpeed = 1.5 + game.difficulty * 0.8;
     
     for (let i = obstacles.length - 1; i >= 0; i--) {
         const obs = obstacles[i];
@@ -444,6 +575,7 @@ function update(dt) {
                 obstacles.splice(i, 1);
                 spawnParticles(obs.x, obs.y, '#ffff00', 20);
                 game.cameraShake = 5;
+                audio.playCrash(); // Sound
                 continue;
             }
             
@@ -455,11 +587,13 @@ function update(dt) {
                 car.speed *= obs.slowdown;
                 game.cameraShake = 3;
                 obstacles.splice(i, 1);
+                audio.playCrash(); // Sound
             } else if (obs.slippery) {
                 addBonus({ type: 'slippery', duration: 2000 });
                 obstacles.splice(i, 1);
             } else {
                 game.cameraShake = 2;
+                audio.playCrash(); // Sound
             }
         }
     }
@@ -528,6 +662,7 @@ function checkCollision(a, b) {
 // ============== BONUS SYSTEM ==============
 function collectBonus(bonus) {
     spawnParticles(bonus.x, bonus.y, bonus.color, 15);
+    audio.playBonus(bonus.type); // Sound
     
     if (bonus.type.startsWith('fuel')) {
         fuel.current = Math.min(fuel.current + bonus.value, fuel.max);
@@ -996,6 +1131,7 @@ function gameLoop(timestamp) {
 // ============== GAME STATES ==============
 function startGame() {
     init();
+    audio.playStart(); // Sound
     game.state = 'playing';
     hideAllScreens();
 }
@@ -1003,6 +1139,7 @@ function startGame() {
 function pauseGame() {
     if (game.state === 'playing') {
         game.state = 'paused';
+        audio.stopEngine();
         showScreen('pauseScreen');
     }
 }
@@ -1016,6 +1153,8 @@ function resumeGame() {
 
 function gameOver(reason) {
     game.state = 'gameOver';
+    audio.playCrash(); // Sound
+    audio.stopEngine();
     
     const isNewRecord = saveRecord(game.distance);
     updateRecordDisplay();
@@ -1038,6 +1177,7 @@ function hideAllScreens() {
 
 function goToMenu() {
     game.state = 'menu';
+    audio.stopEngine();
     hideAllScreens();
     showScreen('startScreen');
     updateRecordDisplay();
@@ -1094,6 +1234,7 @@ function setMobileControls(mode) {
 }
 
 document.getElementById('controlModeBtn').addEventListener('click', function() {
+    audio.playClick();
     if (game.mobileMode === 'touch') {
         setMobileControls('wheel');
     } else {
@@ -1152,20 +1293,30 @@ function handleWheelEnd(e) {
     wheelStick.style.transform = `translate(-50%, -50%)`;
 }
 
-// Buttons
-document.getElementById('startBtn').addEventListener('click', startGame);
-document.getElementById('resumeBtn').addEventListener('click', resumeGame);
-document.getElementById('restartBtn').addEventListener('click', startGame);
-document.getElementById('restartPause').addEventListener('click', startGame);
-document.getElementById('menuBtn').addEventListener('click', goToMenu);
-document.getElementById('menuBtn2').addEventListener('click', goToMenu);
+// Buttons Logic & Sounds
+function setupBtn(id, action) {
+    const btn = document.getElementById(id);
+    if (!btn) return;
+    btn.addEventListener('mouseenter', () => audio.playHover());
+    btn.addEventListener('click', () => {
+        audio.playClick();
+        action();
+    });
+}
 
-document.getElementById('soundBtn').addEventListener('click', function() {
-    game.soundEnabled = !game.soundEnabled;
-    updateSoundBtnText();
+setupBtn('startBtn', startGame);
+setupBtn('resumeBtn', resumeGame);
+setupBtn('restartBtn', startGame);
+setupBtn('restartPause', startGame);
+setupBtn('menuBtn', goToMenu);
+setupBtn('menuBtn2', goToMenu);
+
+setupBtn('soundBtn', function() {
+    const enabled = audio.toggle();
+    document.getElementById('soundBtn').textContent = enabled ? translations[currentLang].sound : translations[currentLang].noSound;
 });
 
-document.getElementById('fullscreenBtn').addEventListener('click', () => {
+setupBtn('fullscreenBtn', () => {
     if (document.fullscreenElement) {
         document.exitFullscreen();
     } else {

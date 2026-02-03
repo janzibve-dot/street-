@@ -135,6 +135,7 @@ function resizeCanvas() {
 resizeCanvas();
 window.addEventListener('resize', resizeCanvas);
 
+// DETECT MOBILE
 const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 768;
 
 // ============== LOCALIZATION ==============
@@ -229,7 +230,7 @@ const game = {
     cameraOffsetY: 0,
     worldSpeed: 0,
     mobileMode: 'touch',
-    lives: 3 // Жизни
+    lives: 3
 };
 
 // ============== CAR ==============
@@ -246,8 +247,8 @@ const car = {
     brakeForce: 1.5,
     handbrakeForce: 3.5,
     turnSpeed: 0,
-    maxTurnSpeed: 19, 
-    turnAccel: 1.3,
+    maxTurnSpeed: 22, // ПОВЫШЕНА
+    turnAccel: 1.6,   // ПОВЫШЕНА (быстрее рулится)
     friction: 0.88,
     tilt: 0
 };
@@ -357,12 +358,13 @@ function init() {
     updateRecordDisplay();
     updateLivesDisplay();
     
-    // Проверка устройства
+    // Проверка устройства и включение кнопок
     if (isMobile) {
+        // Если мобильный - показываем управление
         setMobileControls(game.mobileMode);
         document.getElementById('controlModeBtn').style.display = 'inline-block';
     } else {
-        // На ПК скрываем мобильные контроллеры и кнопку переключения
+        // Если ПК - скрываем
         document.getElementById('mobileControls').style.display = 'none';
         document.getElementById('mobileWheelControls').style.display = 'none';
         document.getElementById('controlModeBtn').style.display = 'none';
@@ -394,7 +396,6 @@ function spawnObjects() {
         } while (usedLanes.includes(lane) && attempts < 10);
         usedLanes.push(lane);
 
-        // Увеличено расстояние (450)
         const verticalOffset = i * -450; 
 
         const availableTypes = obstacleTypes.filter((t, idx) => idx <= 2 + game.difficulty);
@@ -426,7 +427,7 @@ function spawnObjects() {
         
         let type;
         const rand = Math.random();
-        if (rand < 0.05) { // Шанс жизни
+        if (rand < 0.05) { 
             type = bonusTypes.find(t => t.type === 'life');
         } else if (rand < 0.6) {
              const fuelTypes = bonusTypes.filter(t => t.type.startsWith('fuel'));
@@ -560,7 +561,8 @@ function update(dt) {
     const magnetActive = hasActiveBonus('magnet');
     
     // Update obstacles
-    const baseSpeed = 1.2 + game.difficulty * 0.7; // Снижено
+    // СНИЖЕНА СКОРОСТЬ (0.6 вместо 0.7 и база та же 1.2) - плавнее нарастание
+    const baseSpeed = 1.2 + game.difficulty * 0.6; 
     
     for (let i = obstacles.length - 1; i >= 0; i--) {
         const obs = obstacles[i];
@@ -1262,7 +1264,8 @@ document.addEventListener('keyup', e => {
 // MOBILE - MODE SWITCHING
 function setMobileControls(mode) {
     game.mobileMode = mode;
-    document.getElementById('mobileControls').style.display = mode === 'touch' ? 'flex' : 'none'; // Flex!
+    // Включаем отображение flex для кнопок, block для руля
+    document.getElementById('mobileControls').style.display = mode === 'touch' ? 'flex' : 'none';
     document.getElementById('mobileWheelControls').style.display = mode === 'wheel' ? 'block' : 'none';
     updateControlBtnText();
 }

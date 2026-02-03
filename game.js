@@ -89,6 +89,9 @@ class AudioController {
         if (type.startsWith('fuel')) {
             this.playTone(880, 'sine', 0.2, 0.1);
             setTimeout(() => this.playTone(1100, 'sine', 0.2, 0.1), 100);
+        } else if (type === 'life') {
+             this.playTone(500, 'sine', 0.1, 0.2);
+             setTimeout(() => this.playTone(800, 'sine', 0.2, 0.2), 100);
         } else {
             this.playTone(1200, 'square', 0.3, 0.05);
             setTimeout(() => this.playTone(1800, 'square', 0.4, 0.05), 100);
@@ -103,16 +106,11 @@ class AudioController {
 
     updateEngine(speed, maxSpeed) {
         if (!this.enabled || !this.ctx || !this.engineOsc) return;
-        
-        // Pitch modulation
         const minFreq = 60;
         const maxFreq = 200;
         const ratio = Math.min(1, speed / maxSpeed);
         const targetFreq = minFreq + (maxFreq - minFreq) * ratio;
-        
         this.engineOsc.frequency.setTargetAtTime(targetFreq, this.ctx.currentTime, 0.1);
-        
-        // Volume modulation (idle rumble vs high rev)
         const targetVol = (speed > 10) ? 0.08 : 0.03;
         this.engineGain.gain.setTargetAtTime(targetVol, this.ctx.currentTime, 0.1);
     }
@@ -230,7 +228,8 @@ const game = {
     cameraShake: 0,
     cameraOffsetY: 0,
     worldSpeed: 0,
-    mobileMode: 'touch'
+    mobileMode: 'touch',
+    lives: 3 // Жизни
 };
 
 // ============== CAR ==============
@@ -247,7 +246,6 @@ const car = {
     brakeForce: 1.5,
     handbrakeForce: 3.5,
     turnSpeed: 0,
-    // ЕЩЁ БЫСТРЕЕ И РЕЗЧЕ:
     maxTurnSpeed: 19, 
     turnAccel: 1.3,
     friction: 0.88,
@@ -308,7 +306,8 @@ const bonusTypes = [
     { type: 'slowmo', w: 35, h: 35, d: 40, color: '#ff00ff', duration: 4000, icon: '⏱' },
     { type: 'shield', w: 35, h: 35, d: 40, color: '#ffff00', duration: 6000, icon: '🛡' },
     { type: 'magnet', w: 35, h: 35, d: 40, color: '#ff8800', duration: 5000, icon: '🧲' },
-    { type: 'double', w: 35, h: 35, d: 40, color: '#ff00aa', duration: 8000, icon: '×2' }
+    { type: 'double', w: 35, h: 35, d: 40, color: '#ff00aa', duration: 8000, icon: '×2' },
+    { type: 'life', w: 40, h: 40, d: 40, color: '#ff0044', value: 1, icon: '❤️' }
 ];
 
 // ============== LOCAL STORAGE ==============
@@ -330,7 +329,7 @@ function updateRecordDisplay() {
 
 // ============== INITIALIZE ==============
 function init() {
-    audio.init(); // Init audio context
+    audio.init(); 
     car.x = canvas.width / 2;
     car.y = canvas.height * 0.82; 
     car.speed = 0;
@@ -345,6 +344,7 @@ function init() {
     game.difficulty = 1;
     game.cameraShake = 0;
     game.worldSpeed = 0;
+    game.lives = 3;
     
     obstacles = [];
     bonuses = [];
@@ -355,7 +355,13 @@ function init() {
     road.curveTarget = 0;
     
     updateRecordDisplay();
+    updateLivesDisplay();
     setMobileControls(game.mobileMode);
+}
+
+function updateLivesDisplay() {
+    const hearts = '❤️'.repeat(Math.max(0, game.lives));
+    document.getElementById('livesDisplay').textContent = hearts;
 }
 
 // ============== SPAWN SYSTEM ==============
@@ -378,7 +384,8 @@ function spawnObjects() {
         } while (usedLanes.includes(lane) && attempts < 10);
         usedLanes.push(lane);
 
-        const verticalOffset = i * -350; 
+        // Увеличено расстояние (450)
+        const verticalOffset = i * -450; 
 
         const availableTypes = obstacleTypes.filter((t, idx) => idx <= 2 + game.difficulty);
         const type = availableTypes[Math.floor(Math.random() * availableTypes.length)];
@@ -408,22 +415,27 @@ function spawnObjects() {
         } while (usedLanes.includes(bonusLane));
         
         let type;
-        if (Math.random() < 0.6) {
+        const rand = Math.random();
+        if (rand < 0.05) { // Шанс жизни
+            type = bonusTypes.find(t => t.type === 'life');
+        } else if (rand < 0.6) {
              const fuelTypes = bonusTypes.filter(t => t.type.startsWith('fuel'));
              type = fuelTypes[Math.floor(Math.random() * fuelTypes.length)];
         } else {
-             const otherTypes = bonusTypes.filter(t => !t.type.startsWith('fuel'));
+             const otherTypes = bonusTypes.filter(t => !t.type.startsWith('fuel') && t.type !== 'life');
              type = otherTypes[Math.floor(Math.random() * otherTypes.length)];
         }
         
-        bonuses.push({
-            x: roadLeft + bonusLane * laneWidth + laneWidth / 2,
-            y: -300 - Math.random() * 100,
-            z: 0,
-            ...type,
-            rotation: 0,
-            floatOffset: Math.random() * Math.PI * 2
-        });
+        if (type) {
+            bonuses.push({
+                x: roadLeft + bonusLane * laneWidth + laneWidth / 2,
+                y: -300 - Math.random() * 100,
+                z: 0,
+                ...type,
+                rotation: 0,
+                floatOffset: Math.random() * Math.PI * 2
+            });
+        }
     }
 }
 
@@ -431,7 +443,6 @@ function spawnObjects() {
 function update(dt) {
     if (game.state !== 'playing') return;
     
-    // Update audio
     audio.updateEngine(car.speed, car.maxSpeed);
     
     const deltaTime = Math.min(dt, 50);
@@ -539,8 +550,7 @@ function update(dt) {
     const magnetActive = hasActiveBonus('magnet');
     
     // Update obstacles
-    // ЗАМЕДЛЕНО ЕЩЕ НЕМНОГО (1.5 + difficulty)
-    const baseSpeed = 1.5 + game.difficulty * 0.8;
+    const baseSpeed = 1.2 + game.difficulty * 0.7; // Снижено
     
     for (let i = obstacles.length - 1; i >= 0; i--) {
         const obs = obstacles[i];
@@ -575,25 +585,37 @@ function update(dt) {
                 obstacles.splice(i, 1);
                 spawnParticles(obs.x, obs.y, '#ffff00', 20);
                 game.cameraShake = 5;
-                audio.playCrash(); // Sound
+                audio.playCrash();
                 continue;
             }
             
             if (obs.fatal) {
-                spawnExplosion(car.x, car.y);
-                gameOver('crash');
-                return;
+                if (game.lives > 1) {
+                    game.lives--;
+                    updateLivesDisplay();
+                    obstacles.splice(i, 1);
+                    spawnParticles(obs.x, obs.y, '#ff0000', 30);
+                    game.cameraShake = 20;
+                    audio.playCrash();
+                    car.speed *= 0.5;
+                } else {
+                    game.lives = 0;
+                    updateLivesDisplay();
+                    spawnExplosion(car.x, car.y);
+                    gameOver('crash');
+                    return;
+                }
             } else if (obs.slowdown) {
                 car.speed *= obs.slowdown;
                 game.cameraShake = 3;
                 obstacles.splice(i, 1);
-                audio.playCrash(); // Sound
+                audio.playCrash();
             } else if (obs.slippery) {
                 addBonus({ type: 'slippery', duration: 2000 });
                 obstacles.splice(i, 1);
             } else {
                 game.cameraShake = 2;
-                audio.playCrash(); // Sound
+                audio.playCrash();
             }
         }
     }
@@ -662,11 +684,14 @@ function checkCollision(a, b) {
 // ============== BONUS SYSTEM ==============
 function collectBonus(bonus) {
     spawnParticles(bonus.x, bonus.y, bonus.color, 15);
-    audio.playBonus(bonus.type); // Sound
+    audio.playBonus(bonus.type);
     
     if (bonus.type.startsWith('fuel')) {
         fuel.current = Math.min(fuel.current + bonus.value, fuel.max);
         game.fuelCollected++;
+    } else if (bonus.type === 'life') {
+        game.lives = Math.min(game.lives + 1, 3);
+        updateLivesDisplay();
     } else if (bonus.duration) {
         addBonus(bonus);
     }
@@ -1131,7 +1156,7 @@ function gameLoop(timestamp) {
 // ============== GAME STATES ==============
 function startGame() {
     init();
-    audio.playStart(); // Sound
+    audio.playStart();
     game.state = 'playing';
     hideAllScreens();
 }
@@ -1153,7 +1178,6 @@ function resumeGame() {
 
 function gameOver(reason) {
     game.state = 'gameOver';
-    audio.playCrash(); // Sound
     audio.stopEngine();
     
     const isNewRecord = saveRecord(game.distance);
@@ -1228,7 +1252,7 @@ document.addEventListener('keyup', e => {
 // MOBILE - MODE SWITCHING
 function setMobileControls(mode) {
     game.mobileMode = mode;
-    document.getElementById('mobileControls').style.display = mode === 'touch' ? 'block' : 'none';
+    document.getElementById('mobileControls').style.display = mode === 'touch' ? 'flex' : 'none'; // Flex!
     document.getElementById('mobileWheelControls').style.display = mode === 'wheel' ? 'block' : 'none';
     updateControlBtnText();
 }

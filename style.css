@@ -7,40 +7,29 @@
     touch-action: none;
     -webkit-tap-highlight-color: transparent;
     user-select: none;
-}
-
-:root {
+}:root {
     --neon-cyan: #00f5ff;
     --neon-pink: #ff00ff;
     --neon-yellow: #ffff00;
     --neon-green: #00ff88;
     --neon-orange: #ff8800;
     --neon-red: #ff0044;
-}
-
-body {
+}body {
     font-family: 'Rajdhani', sans-serif;
     background: #000;
     overflow: hidden;
     height: 100vh;
     width: 100vw;
-}
-
-#gameContainer {
+}#gameContainer {
     position: relative;
     width: 100%;
     height: 100%;
     overflow: hidden;
-}
-
-#gameCanvas {
+}#gameCanvas {
     display: block;
     width: 100%;
     height: 100%;
-}
-
-/* HUD */
-#hud {
+}#hud {
     position: absolute;
     top: 0;
     left: 0;
@@ -51,23 +40,16 @@ body {
     align-items: flex-start;
     pointer-events: none;
     z-index: 10;
-}
-
-.hud-left, .hud-right, .hud-center {
+}.hud-left, .hud-right, .hud-center {
     display: flex;
     flex-direction: column;
     gap: 15px;
-}
-
-.hud-center {
+}.hud-center {
     position: absolute;
     left: 50%;
     transform: translateX(-50%);
     align-items: center;
-}
-
-/* ОБНОВЛЕННЫЕ БОЛЬШИЕ ПАНЕЛИ */
-.hud-panel {
+}.hud-panel {
     background: rgba(0, 0, 0, 0.85);
     border: 3px solid var(--neon-cyan);
     border-radius: 12px;
@@ -76,38 +58,27 @@ body {
                 inset 0 0 20px rgba(0, 245, 255, 0.1);
     backdrop-filter: blur(5px);
     transition: transform 0.2s;
-}
-
-.large-panel {
+}.large-panel {
     min-width: 140px;
     text-align: center;
-}
-
-.hud-label {
+}.hud-label {
     font-size: 12px;
     color: var(--neon-cyan);
     text-transform: uppercase;
     letter-spacing: 2px;
     margin-bottom: 5px;
     font-weight: bold;
-}
-
-.hud-value {
+}.hud-value {
     font-family: 'Orbitron', monospace;
     font-size: 28px;
     font-weight: 900;
     color: white;
     text-shadow: 0 0 15px var(--neon-cyan);
-}
-
-.lives-display {
+}.lives-display {
     font-size: 24px;
     letter-spacing: 5px;
     text-shadow: 0 0 15px var(--neon-red);
-}
-
-/* Speedometer */
-#speedometer {
+}#speedometer {
     width: 140px;
     height: 140px;
     position: relative;
@@ -116,25 +87,7 @@ body {
     border-radius: 50%;
     box-shadow: 0 0 40px rgba(0, 245, 255, 0.5),
                 inset 0 0 40px rgba(0, 245, 255, 0.2);
-}
-
-#speedometer.warning {
-    border-color: var(--neon-orange);
-    box-shadow: 0 0 40px rgba(255, 136, 0, 0.7);
-}
-
-#speedometer.danger {
-    border-color: var(--neon-red);
-    box-shadow: 0 0 50px rgba(255, 0, 68, 0.9);
-    animation: speedPulse 0.3s infinite;
-}
-
-@keyframes speedPulse {
-    0%, 100% { transform: scale(1); }
-    50% { transform: scale(1.05); }
-}
-
-#speedValue {
+}#speedValue {
     position: absolute;
     top: 50%;
     left: 50%;
@@ -143,9 +96,7 @@ body {
     font-size: 36px;
     font-weight: 900;
     color: white;
-}
-
-#speedUnit {
+}#speedUnit {
     position: absolute;
     bottom: 25px;
     left: 50%;
@@ -153,9 +104,7 @@ body {
     font-size: 12px;
     color: var(--neon-cyan);
     letter-spacing: 1px;
-}
-
-#speedNeedle {
+}#speedNeedle {
     position: absolute;
     bottom: 50%;
     left: 50%;
@@ -166,14 +115,7 @@ body {
     transform: translateX(-50%) rotate(-90deg);
     border-radius: 2px;
     box-shadow: 0 0 15px var(--neon-red);
-}
-
-/* Fuel Gauge */
-#fuelGauge {
-    width: 100%;
-}
-
-#fuelBar {
+}#fuelBar {
     width: 100%;
     height: 25px;
     background: rgba(0, 0, 0, 0.5);
@@ -182,32 +124,23 @@ body {
     overflow: hidden;
     position: relative;
     margin: 5px 0;
-}
-
-#fuelFill {
+}#fuelFill {
     height: 100%;
     background: linear-gradient(90deg, var(--neon-red), var(--neon-yellow), var(--neon-green));
     transition: width 0.3s;
     box-shadow: 0 0 20px var(--neon-green);
-}
-
-#fuelText {
+}#fuelText {
     font-family: 'Orbitron', monospace;
     font-size: 14px;
     color: white;
     text-align: center;
-}
-
-/* Active Bonuses */
-#activeBonuses {
+}#activeBonuses {
     display: flex;
     gap: 10px;
     flex-wrap: wrap;
     max-width: 250px;
     justify-content: center;
-}
-
-.bonus-indicator {
+}.bonus-indicator {
     width: 50px;
     height: 50px;
     border-radius: 10px;
@@ -216,32 +149,21 @@ body {
     align-items: center;
     font-size: 24px;
     position: relative;
-    animation: bonusPulse 1s infinite;
     background-color: rgba(0,0,0,0.6);
-}
-
-.bonus-indicator .timer {
+}.bonus-indicator .timer {
     position: absolute;
     bottom: 0;
     left: 0;
     right: 0;
     height: 4px;
     background: rgba(255,255,255,0.3);
-}
-
-.bonus-indicator .timer-fill {
+}.bonus-indicator .timer-fill {
     height: 100%;
     background: white;
     transition: width 0.1s;
-}
-
-/* MOBILE CONTROLS */
-/* Важно: display: none по умолчанию, JS переключает на flex/block */
-#mobileControls, #mobileWheelControls {
+}#mobileControls, #mobileWheelControls {
     display: none; 
-}
-
-#mobileControls {
+}#mobileControls {
     position: absolute;
     bottom: 20px;
     left: 20px;
@@ -249,11 +171,10 @@ body {
     height: 180px;
     pointer-events: auto;
     z-index: 20;
+    display: none;
     justify-content: space-between;
     gap: 20px;
-}
-
-.touch-btn {
+}.touch-btn {
     flex: 1;
     background: rgba(0, 245, 255, 0.15);
     border: 3px solid rgba(0, 245, 255, 0.4);
@@ -261,18 +182,8 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    transition: all 0.1s;
     backdrop-filter: blur(5px);
-    pointer-events: auto; /* Важно */
-}
-
-.touch-btn:active {
-    background: rgba(0, 245, 255, 0.4);
-    transform: scale(0.95);
-    box-shadow: 0 0 30px rgba(0, 245, 255, 0.5);
-}
-
-.touch-brake-btn {
+}.touch-brake-btn {
     width: 100px;
     background: rgba(255, 0, 68, 0.15);
     border: 3px solid rgba(255, 0, 68, 0.4);
@@ -280,31 +191,8 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    transition: all 0.1s;
     backdrop-filter: blur(5px);
-    pointer-events: auto;
-}
-
-.touch-brake-btn:active {
-    background: rgba(255, 0, 68, 0.4);
-    transform: scale(0.95);
-    box-shadow: 0 0 30px rgba(255, 0, 68, 0.5);
-}
-
-.touch-icon {
-    font-size: 80px;
-    color: white;
-    text-shadow: 0 0 20px var(--neon-cyan);
-}
-
-.touch-icon-small {
-    font-size: 50px;
-    color: white;
-    text-shadow: 0 0 20px var(--neon-red);
-}
-
-/* Wheel */
-#virtualWheelBase {
+}.touch-icon { font-size: 80px; color: white; text-shadow: 0 0 20px var(--neon-cyan); }.touch-icon-small { font-size: 50px; color: white; text-shadow: 0 0 20px var(--neon-red); }#virtualWheelBase {
     position: absolute;
     bottom: 20px;
     left: 20px;
@@ -313,11 +201,8 @@ body {
     background: rgba(0, 0, 0, 0.5);
     border: 2px solid var(--neon-cyan);
     border-radius: 50%;
-    touch-action: none;
-    pointer-events: auto;
-}
-
-#virtualWheel {
+    display: none;
+}#virtualWheel {
     width: 50px;
     height: 50px;
     background: var(--neon-cyan);
@@ -326,10 +211,7 @@ body {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    box-shadow: 0 0 15px var(--neon-cyan);
-}
-
-#wheelBrake {
+}#wheelBrake {
     position: absolute;
     bottom: 20px;
     right: 20px;
@@ -338,186 +220,35 @@ body {
     border-radius: 50%;
     border: 2px solid var(--neon-red);
     background: rgba(255, 0, 68, 0.15);
-    display: flex;
+    display: none;
     justify-content: center;
     align-items: center;
-    pointer-events: auto;
-}
-
-/* Screens Styles */
-.screen {
+}.screen {
     position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
+    top: 0; left: 0; right: 0; bottom: 0;
+    display: flex; flex-direction: column; justify-content: center; align-items: center;
     background: radial-gradient(circle, rgba(20,20,40,0.98) 0%, rgba(0,0,0,1) 100%);
-    z-index: 100;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.3s;
-}
+    z-index: 100; opacity: 0; pointer-events: none; transition: opacity 0.3s;
+}.screen.active { opacity: 1; pointer-events: auto; }.game-title {
+    font-family: 'Orbitron', monospace; font-size: clamp(40px, 9vw, 80px); font-weight: 900; color: white;
+    text-shadow: 0 0 30px var(--neon-cyan), 0 0 60px var(--neon-pink); letter-spacing: 6px; margin-bottom: 5px; text-align: center;
+}.subtitle { font-size: clamp(14px, 3.5vw, 22px); color: var(--neon-cyan); letter-spacing: 10px; text-transform: uppercase; margin-bottom: 40px; }.record-display {
+    background: rgba(255, 215, 0, 0.1); border: 2px solid gold; border-radius: 15px; padding: 20px 40px; margin-bottom: 40px; text-align: center;
+}.record-value { font-family: 'Orbitron', monospace; font-size: 42px; font-weight: 900; color: gold; }.btn {
+    font-family: 'Orbitron', monospace; font-size: clamp(18px, 4vw, 24px); font-weight: 800; padding: 18px 60px;
+    margin: 12px; border-radius: 50px; background: rgba(0, 245, 255, 0.1); color: white; cursor: pointer;
+    text-transform: uppercase; letter-spacing: 3px; border: 2px solid var(--neon-cyan);
+}.btn-secondary { border-color: var(--neon-pink); font-size: 14px; padding: 12px 30px; }.menu-buttons { display: flex; flex-direction: column; gap: 15px; align-items: center; width: 100%; }.menu-row { display: flex; gap: 15px; justify-content: center; flex-wrap: wrap; }.lang-switch { position: absolute; top: 30px; right: 30px; display: flex; gap: 10px; }.btn-lang {
+    background: transparent; border: 2px solid var(--neon-cyan); color: var(--neon-cyan); padding: 8px 15px; cursor: pointer;
+}.btn-lang.active { background: var(--neon-cyan); color: black; }.controls-info {
+    margin-top: 40px; padding: 20px; background: rgba(255, 255, 255, 0.05); border-radius: 15px; border: 1px solid rgba(255, 255, 255, 0.1); text-align: center;
+}.key {
+    display: inline-block; padding: 4px 10px; background: rgba(0, 245, 255, 0.15); border: 1px solid var(--neon-cyan); border-radius: 6px; margin: 0 4px;
+}.game-over-title { font-family: 'Orbitron', monospace; font-size: clamp(28px, 7vw, 48px); color: var(--neon-red); margin-bottom: 20px; }.final-score { font-family: 'Orbitron', monospace; font-size: clamp(40px, 10vw, 72px); color: var(--neon-yellow); }.stats-row { display: flex; gap: 40px; margin: 25px 0; flex-wrap: wrap; justify-content: center; }
 
-.screen.active {
-    opacity: 1;
-    pointer-events: auto;
-}
-
-/* Typography & Buttons */
-.game-title {
-    font-family: 'Orbitron', monospace;
-    font-size: clamp(40px, 9vw, 80px);
-    font-weight: 900;
-    color: white;
-    text-shadow: 0 0 30px var(--neon-cyan), 0 0 60px var(--neon-pink);
-    letter-spacing: 6px;
-    margin-bottom: 5px;
-    text-align: center;
-    animation: titleGlow 2s ease-in-out infinite;
-}
-
-@keyframes titleGlow {
-    0%, 100% { text-shadow: 0 0 30px var(--neon-cyan), 0 0 60px var(--neon-pink); }
-    50% { text-shadow: 0 0 50px var(--neon-cyan), 0 0 100px var(--neon-pink); }
-}
-
-.subtitle {
-    font-size: clamp(14px, 3.5vw, 22px);
-    color: var(--neon-cyan);
-    letter-spacing: 10px;
-    text-transform: uppercase;
-    margin-bottom: 40px;
-}
-
-.record-display {
-    background: rgba(255, 215, 0, 0.1);
-    border: 2px solid gold;
-    border-radius: 15px;
-    padding: 20px 40px;
-    margin-bottom: 40px;
-    text-align: center;
-    box-shadow: 0 0 30px rgba(255, 215, 0, 0.1);
-}
-
-.record-label { font-size: 14px; color: gold; letter-spacing: 4px; text-transform: uppercase; margin-bottom: 5px; }
-.record-value { font-family: 'Orbitron', monospace; font-size: 42px; font-weight: 900; color: gold; text-shadow: 0 0 20px gold; }
-
-.btn {
-    font-family: 'Orbitron', monospace;
-    font-size: clamp(18px, 4vw, 24px);
-    font-weight: 800;
-    padding: 18px 60px;
-    margin: 12px;
-    border: none;
-    border-radius: 50px;
-    background: linear-gradient(90deg, transparent 0%, rgba(0, 245, 255, 0.1) 50%, transparent 100%);
-    color: white;
-    cursor: pointer;
-    text-transform: uppercase;
-    letter-spacing: 3px;
-    transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    border: 2px solid var(--neon-cyan);
-    box-shadow: 0 0 15px rgba(0, 245, 255, 0.2), inset 0 0 20px rgba(0, 245, 255, 0.1);
-}
-
-.btn:hover {
-    background: var(--neon-cyan);
-    color: #000;
-    transform: scale(1.1) translateY(-3px);
-    box-shadow: 0 0 40px rgba(0, 245, 255, 0.8);
-    letter-spacing: 5px;
-}
-
-.btn:active { transform: scale(0.95); }
-
-.btn-secondary {
-    border-color: var(--neon-pink);
-    color: #fff;
-    font-size: 14px;
-    padding: 12px 30px;
-    background: linear-gradient(90deg, transparent 0%, rgba(255, 0, 255, 0.1) 50%, transparent 100%);
-    box-shadow: 0 0 15px rgba(255, 0, 255, 0.2), inset 0 0 20px rgba(255, 0, 255, 0.1);
-}
-
-.btn-secondary:hover {
-    background: var(--neon-pink);
-    color: #fff;
-    box-shadow: 0 0 40px rgba(255, 0, 255, 0.8);
-}
-
-.menu-buttons { display: flex; flex-direction: column; gap: 15px; align-items: center; width: 100%; }
-.menu-row { display: flex; gap: 15px; justify-content: center; flex-wrap: wrap; }
-.lang-switch { position: absolute; top: 30px; right: 30px; display: flex; gap: 10px; }
-
-.btn-lang {
-    background: transparent;
-    border: 2px solid var(--neon-cyan);
-    color: var(--neon-cyan);
-    padding: 8px 15px;
-    cursor: pointer;
-    font-family: 'Rajdhani', sans-serif;
-    font-weight: bold;
-    font-size: 16px;
-    border-radius: 5px;
-}
-.btn-lang.active { background: var(--neon-cyan); color: black; box-shadow: 0 0 15px var(--neon-cyan); }
-
-.controls-info {
-    margin-top: 40px;
-    padding: 20px;
-    background: rgba(255, 255, 255, 0.05);
-    border-radius: 15px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    max-width: 90%;
-    text-align: center;
-}
-.controls-info h3 { color: var(--neon-pink); font-size: 16px; margin-bottom: 12px; letter-spacing: 3px; }
-.controls-info p { color: rgba(255, 255, 255, 0.8); font-size: 14px; line-height: 1.8; }
-.key {
-    display: inline-block; padding: 4px 10px; background: rgba(0, 245, 255, 0.15); border: 1px solid var(--neon-cyan);
-    border-radius: 6px; font-family: 'Orbitron', monospace; font-size: 12px; margin: 0 4px; box-shadow: 0 0 5px rgba(0, 245, 255, 0.2);
-}
-
-/* Game Over Styles */
-.game-over-title {
-    font-family: 'Orbitron', monospace; font-size: clamp(28px, 7vw, 48px); font-weight: 900; color: var(--neon-red);
-    text-shadow: 0 0 30px var(--neon-red); margin-bottom: 20px;
-}
-.final-score {
-    font-family: 'Orbitron', monospace; font-size: clamp(40px, 10vw, 72px); font-weight: 900; color: var(--neon-yellow);
-    text-shadow: 0 0 30px var(--neon-yellow);
-}
-.score-label { font-size: 14px; color: var(--neon-cyan); letter-spacing: 3px; margin-bottom: 5px; }
-.new-record { color: gold; font-family: 'Orbitron', monospace; font-size: 24px; animation: newRecordPulse 0.5s infinite; margin: 15px 0; text-shadow: 0 0 15px gold; }
-.stats-row { display: flex; gap: 40px; margin: 25px 0; flex-wrap: wrap; justify-content: center; }
-.stat { text-align: center; }
-.stat-label { font-size: 12px; color: var(--neon-cyan); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 5px; }
-.stat-value { font-family: 'Orbitron', monospace; font-size: 28px; font-weight: 700; color: white; }
-
-/* Responsive adjustments */
 @media (max-width: 768px) {
     #speedometer { width: 100px; height: 100px; }
     #speedValue { font-size: 24px; }
-    #speedNeedle { height: 40px; }
-    #fuelGauge { width: 100%; }
-    .hud-panel { padding: 8px 12px; min-width: 80px; }
-    .hud-value { font-size: 20px; }
-    .hud-label { font-size: 10px; }
     #pcControls { display: none; }
-    .btn { padding: 15px 40px; font-size: 18px; }
-    .lives-display { font-size: 18px; }
-    .touch-icon { font-size: 60px; }
-}
-
-@media (orientation: landscape) and (max-height: 500px) {
-    #hud { padding: 5px 10px; }
-    #speedometer { width: 80px; height: 80px; }
-    #speedValue { font-size: 18px; }
-    #speedNeedle { height: 30px; }
-    .touch-icon { font-size: 40px; }
-    .hud-panel { padding: 5px 10px; }
+    #mobileControls { display: flex; }
 }

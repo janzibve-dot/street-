@@ -85,7 +85,6 @@ function setLanguage(lang) {
     document.getElementById('langRu').classList.toggle('active', lang === 'ru');
     document.getElementById('langEn').classList.toggle('active', lang === 'en');
     
-    // Update specific dynamic buttons
     updateControlBtnText();
     updateSoundBtnText();
 }
@@ -104,7 +103,7 @@ const game = {
     cameraOffsetY: 0,
     worldSpeed: 0,
     soundEnabled: true,
-    mobileMode: 'touch' // 'touch' or 'wheel'
+    mobileMode: 'touch'
 };
 
 // ============== CAR ==============
@@ -115,15 +114,15 @@ const car = {
     width: 60,
     height: 100,
     speed: 0,
-    maxSpeed: 220, // Increased
-    acceleration: 1.2, // More responsive start
+    maxSpeed: 220,
+    acceleration: 1.2,
     deceleration: 0.3,
     brakeForce: 1.5,
     handbrakeForce: 3.5,
     turnSpeed: 0,
-    maxTurnSpeed: 8,
-    turnAccel: 0.5, // Slightly heavier feel
-    friction: 0.94, // More inertia
+    maxTurnSpeed: 12,    // Увеличено с 8 (быстрее поворот)
+    turnAccel: 0.85,     // Увеличено с 0.5 (резче реакция)
+    friction: 0.90,      // Уменьшено с 0.94 (меньше инерции, точнее управление)
     tilt: 0
 };
 
@@ -138,7 +137,7 @@ const fuel = {
 
 // ============== ROAD ==============
 const road = {
-    width: 500, // Wider for 5 lanes
+    width: 500,
     lanes: 5,
     segments: [],
     segmentLength: 200,
@@ -230,53 +229,61 @@ function init() {
     setMobileControls(game.mobileMode);
 }
 
-// ============== SPAWN SYSTEM (IMPROVED) ==============
+// ============== SPAWN SYSTEM (UPDATED) ==============
 let spawnTimer = 0;
-const spawnInterval = 1000; // Slower start
+const spawnInterval = 1000;
 
 function spawnObjects() {
     const roadLeft = (canvas.width - road.width) / 2;
     const laneWidth = road.width / road.lanes;
     
-    // FAIRNESS LOGIC: Always pick one safe lane
-    const safeLane = Math.floor(Math.random() * road.lanes);
+    // Определяем количество препятствий (максимум 2 за раз, но разнесенных по Y)
+    // Чтобы не было стены, мы спавним их "лесенкой"
+    const numObstacles = (game.difficulty > 2 && Math.random() < 0.3) ? 2 : 1;
     
-    const waveSize = Math.min(1 + Math.floor(game.difficulty * 0.5), road.lanes - 1);
-    
-    // Spawn Obstacles
-    for (let lane = 0; lane < road.lanes; lane++) {
-        if (lane === safeLane) continue; // Skip safe lane
+    let usedLanes = [];
 
-        // Random chance to spawn in this lane
-        if (Math.random() < 0.3 + (game.difficulty * 0.05)) {
-            
-            // Limit difficulty types
-            const availableTypes = obstacleTypes.filter((t, idx) => idx <= 2 + game.difficulty);
-            const type = availableTypes[Math.floor(Math.random() * availableTypes.length)];
-            
-            // Movement Behavior
-            let behavior = 'straight';
-            const behaviorRoll = Math.random();
-            if (behaviorRoll < 0.2) behavior = 'zigzag';
-            else if (behaviorRoll < 0.3) behavior = 'diagonal';
+    for (let i = 0; i < numObstacles; i++) {
+        let lane;
+        let attempts = 0;
+        do {
+            lane = Math.floor(Math.random() * road.lanes);
+            attempts++;
+        } while (usedLanes.includes(lane) && attempts < 10);
+        usedLanes.push(lane);
 
-            obstacles.push({
-                x: roadLeft + lane * laneWidth + laneWidth / 2,
-                y: -300 - Math.random() * 200,
-                z: 0,
-                ...type,
-                speedMod: type.moving ? (type.slow ? -0.1 : 0.1 + Math.random() * 0.2) : 0,
-                moveDir: behavior === 'diagonal' ? (Math.random() < 0.5 ? -1 : 1) : 0,
-                behavior: behavior,
-                moveTimer: Math.random() * Math.PI * 2,
-                rotation: 0
-            });
-        }
+        // Вертикальный отступ: первый сразу, второй через 350px (минимум 3 машины)
+        const verticalOffset = i * -350; 
+
+        // Выбор типа
+        const availableTypes = obstacleTypes.filter((t, idx) => idx <= 2 + game.difficulty);
+        const type = availableTypes[Math.floor(Math.random() * availableTypes.length)];
+        
+        // Поведение
+        let behavior = 'straight';
+        const behaviorRoll = Math.random();
+        if (behaviorRoll < 0.2) behavior = 'zigzag';
+        else if (behaviorRoll < 0.3) behavior = 'diagonal';
+
+        obstacles.push({
+            x: roadLeft + lane * laneWidth + laneWidth / 2,
+            y: -300 - Math.random() * 50 + verticalOffset, // Добавлен отступ
+            z: 0,
+            ...type,
+            speedMod: type.moving ? (type.slow ? -0.1 : 0.1 + Math.random() * 0.2) : 0,
+            moveDir: behavior === 'diagonal' ? (Math.random() < 0.5 ? -1 : 1) : 0,
+            behavior: behavior,
+            moveTimer: Math.random() * Math.PI * 2,
+            rotation: 0
+        });
     }
     
-    // Spawn Bonuses (Can be in safe lane or others)
+    // Бонусы
     if (Math.random() < 0.5) {
-        const bonusLane = Math.floor(Math.random() * road.lanes);
+        let bonusLane;
+        do {
+            bonusLane = Math.floor(Math.random() * road.lanes);
+        } while (usedLanes.includes(bonusLane)); // Стараемся не ставить в занятую полосу
         
         let type;
         if (Math.random() < 0.6) {
@@ -304,13 +311,13 @@ function update(dt) {
     
     const deltaTime = Math.min(dt, 50);
     
-    // Slow-mo effect
+    // Slow-mo
     let timeScale = 1;
     if (hasActiveBonus('slowmo')) {
         timeScale = 0.5;
     }
     
-    // Speed boost
+    // Boost
     let speedMultiplier = 1;
     if (hasActiveBonus('boost')) {
         speedMultiplier = 1.5;
@@ -323,14 +330,12 @@ function update(dt) {
     
     if (isMobile) {
         if (game.mobileMode === 'touch') {
-            gas = true; // Auto gas
+            gas = true; 
         } else if (game.mobileMode === 'wheel') {
-            gas = true; // Auto gas
+            gas = true;
             if (wheelInput.active) {
                 if (wheelInput.x < -10) turnLeft = true;
                 if (wheelInput.x > 10) turnRight = true;
-                
-                // Fine tune turning based on stick distance
                 const normalizedTurn = Math.max(-1, Math.min(1, wheelInput.x / 40));
                 car.turnSpeed += normalizedTurn * car.turnAccel; 
             }
@@ -344,14 +349,14 @@ function update(dt) {
     if (keys.down || keys.brake) {
         car.speed = Math.max(car.speed - car.brakeForce, 0);
     }
-    if (keys.brake) { // Handbrake (Space) or Mobile Brake
+    if (keys.brake) { 
         car.speed = Math.max(car.speed - car.handbrakeForce, 0);
     }
     if (!gas && !keys.down && !keys.brake) {
-        car.speed = Math.max(car.speed - car.deceleration, 30); // Min speed
+        car.speed = Math.max(car.speed - car.deceleration, 30);
     }
     
-    // Turning with inertia
+    // Turning
     const turnMultiplier = hasActiveBonus('slippery') ? 0.3 : 1;
     
     if (game.mobileMode !== 'wheel' || !wheelInput.active) {
@@ -360,14 +365,12 @@ function update(dt) {
         } else if (turnRight) {
             car.turnSpeed = Math.min(car.turnSpeed + car.turnAccel * turnMultiplier, car.maxTurnSpeed);
         } else {
-            car.turnSpeed *= car.friction; // Inertia damping
+            car.turnSpeed *= car.friction; 
         }
     } else {
-        // For wheel, we added force directly above, just damp here if needed
         if (!wheelInput.active) car.turnSpeed *= car.friction;
     }
     
-    // Apply turn with speed factor
     const turnAmount = car.turnSpeed * (0.4 + car.speed / car.maxSpeed * 0.6) * timeScale;
     const roadLeft = (canvas.width - road.width) / 2 + car.width / 2;
     const roadRight = (canvas.width + road.width) / 2 - car.width / 2;
@@ -375,18 +378,14 @@ function update(dt) {
     car.x += turnAmount;
     car.x = Math.max(roadLeft, Math.min(roadRight, car.x));
     
-    // Car tilt
     car.tilt = car.turnSpeed * 0.04;
     
-    // World speed (pseudo 3D)
     game.worldSpeed = car.speed * 0.1 * timeScale;
     
-    // Update distance
     const distanceGain = car.speed * 0.0001 * deltaTime * timeScale;
     game.distance += distanceGain * (hasActiveBonus('double') ? 2 : 1);
     game.maxSpeed = Math.max(game.maxSpeed, Math.floor(car.speed));
     
-    // Fuel consumption
     let fuelConsumption = fuel.consumptionBase + car.speed * fuel.consumptionSpeed;
     if (gas) fuelConsumption += fuel.consumptionAccel;
     fuel.current -= fuelConsumption * deltaTime * timeScale * 0.1;
@@ -397,10 +396,8 @@ function update(dt) {
         return;
     }
     
-    // Difficulty scaling
     game.difficulty = 1 + game.distance * 0.4;
     
-    // Spawn timer
     spawnTimer += deltaTime * timeScale;
     const adjustedInterval = Math.max(500, spawnInterval - game.difficulty * 40);
     if (spawnTimer >= adjustedInterval) {
@@ -408,35 +405,29 @@ function update(dt) {
         spawnObjects();
     }
     
-    // Road curve
     if (Math.random() < 0.01) {
         road.curveTarget = (Math.random() - 0.5) * 0.3;
     }
     road.curve += (road.curveTarget - road.curve) * 0.02;
     
-    // Update road markings
     road.markingOffset += game.worldSpeed * 2;
     if (road.markingOffset > 80) road.markingOffset -= 80;
     
-    // Camera shake decay
     game.cameraShake *= 0.9;
     game.cameraOffsetY = Math.sin(Date.now() * 0.003) * 2 + game.cameraShake * (Math.random() - 0.5) * 10;
     
-    // Magnet effect
     const magnetActive = hasActiveBonus('magnet');
     
-    // Update obstacles - SLOWER INCOMING SPEED
-    const baseSpeed = 4 + game.difficulty * 1.5; // Reduced from 8
+    // Update obstacles
+    const baseSpeed = 4 + game.difficulty * 1.5;
     
     for (let i = obstacles.length - 1; i >= 0; i--) {
         const obs = obstacles[i];
         
-        // "Living World" Logic
         let moveSpeed = (baseSpeed + game.worldSpeed * (1 + obs.speedMod)) * timeScale;
         obs.y += moveSpeed;
         obs.moveTimer += 0.03 * timeScale;
         
-        // Complex Movements
         if (obs.behavior === 'zigzag') {
             obs.x += Math.sin(obs.moveTimer * 3) * 2;
         } else if (obs.behavior === 'diagonal') {
@@ -445,26 +436,21 @@ function update(dt) {
             obs.x += Math.sin(obs.moveTimer) * obs.moveDir * 0.5;
         }
         
-        // Rolling barrels
         if (obs.rolling) {
             obs.rotation += game.worldSpeed * 0.1 * timeScale;
             obs.x += Math.sin(obs.moveTimer * 2) * 1.5;
         }
         
-        // Keep on road
         const border = 50;
         obs.x = Math.max(roadLeft - border, Math.min(roadRight + border, obs.x));
         
-        // Remove off-screen
         if (obs.y > canvas.height + 200) {
             obstacles.splice(i, 1);
             continue;
         }
         
-        // Collision
         if (checkCollision(car, obs)) {
             if (hasActiveBonus('shield')) {
-                // Shield protects
                 obstacles.splice(i, 1);
                 spawnParticles(obs.x, obs.y, '#ffff00', 20);
                 game.cameraShake = 5;
@@ -497,7 +483,6 @@ function update(dt) {
         bonus.floatOffset += 0.1 * timeScale;
         bonus.z = Math.sin(bonus.floatOffset) * 5;
         
-        // Magnet pull
         if (magnetActive) {
             const dx = car.x - bonus.x;
             const dy = car.y - bonus.y;
@@ -519,7 +504,6 @@ function update(dt) {
         }
     }
     
-    // Update active bonuses
     for (let i = activeBonuses.length - 1; i >= 0; i--) {
         activeBonuses[i].remaining -= deltaTime;
         if (activeBonuses[i].remaining <= 0) {
@@ -527,7 +511,6 @@ function update(dt) {
         }
     }
     
-    // Update particles
     for (let i = particles.length - 1; i >= 0; i--) {
         const p = particles[i];
         p.x += p.vx * timeScale;
@@ -537,7 +520,6 @@ function update(dt) {
         if (p.life <= 0) particles.splice(i, 1);
     }
     
-    // Update HUD
     updateHUD();
 }
 
@@ -615,19 +597,15 @@ function spawnExplosion(x, y) {
 
 // ============== HUD UPDATE ==============
 function updateHUD() {
-    // Distance
     document.getElementById('distance').textContent = game.distance.toFixed(1) + ' km';
     
-    // Speed
     const speedVal = Math.floor(car.speed);
     document.getElementById('speedValue').textContent = speedVal;
     
-    // Speedometer needle
     const needleAngle = -90 + (car.speed / car.maxSpeed) * 180;
     document.getElementById('speedNeedle').style.transform = 
         `translateX(-50%) rotate(${needleAngle}deg)`;
     
-    // Speed warnings
     const speedo = document.getElementById('speedometer');
     speedo.classList.remove('warning', 'danger');
     if (car.speed > car.maxSpeed * 0.9) {
@@ -636,7 +614,6 @@ function updateHUD() {
         speedo.classList.add('warning');
     }
     
-    // Fuel
     const fuelPercent = (fuel.current / fuel.max) * 100;
     document.getElementById('fuelFill').style.width = fuelPercent + '%';
     document.getElementById('fuelText').textContent = Math.floor(fuelPercent) + '%';
@@ -649,7 +626,6 @@ function updateHUD() {
         fuelGauge.classList.add('warning');
     }
     
-    // Active bonuses
     const bonusContainer = document.getElementById('activeBonuses');
     bonusContainer.innerHTML = activeBonuses.map(b => `
         <div class="bonus-indicator" style="background: ${getBonusColor(b.type)}40; border: 2px solid ${getBonusColor(b.type)};">
@@ -664,7 +640,7 @@ function getBonusColor(type) {
     return bonus ? bonus.color : '#fff';
 }
 
-// ============== DRAW (UNCHANGED 3D RENDER) ==============
+// ============== DRAW ==============
 function draw() {
     const shakeX = game.cameraShake * (Math.random() - 0.5) * 2;
     const shakeY = game.cameraOffsetY;
@@ -672,21 +648,17 @@ function draw() {
     ctx.save();
     ctx.translate(shakeX, shakeY);
     
-    // Sky gradient
     const skyGrad = ctx.createLinearGradient(0, 0, 0, canvas.height * 0.5);
     skyGrad.addColorStop(0, '#0a0a20');
     skyGrad.addColorStop(1, '#1a1a40');
     ctx.fillStyle = skyGrad;
     ctx.fillRect(0, 0, canvas.width, canvas.height * 0.5);
     
-    // Ground
     ctx.fillStyle = '#0f0f25';
     ctx.fillRect(0, canvas.height * 0.4, canvas.width, canvas.height * 0.6);
     
-    // Draw road with perspective
     drawRoad();
     
-    // Draw objects sorted by Y (far to near)
     const allObjects = [...obstacles, ...bonuses].sort((a, b) => a.y - b.y);
     allObjects.forEach(obj => {
         if (obj.icon !== undefined) {
@@ -696,10 +668,8 @@ function draw() {
         }
     });
     
-    // Draw car
     drawCar3D();
     
-    // Draw particles
     particles.forEach(p => {
         ctx.globalAlpha = p.life / 700;
         ctx.fillStyle = p.color;
@@ -716,7 +686,6 @@ function drawRoad() {
     const roadCenter = canvas.width / 2;
     const roadLeft = roadCenter - road.width / 2;
     
-    // Road base with gradient
     const roadGrad = ctx.createLinearGradient(roadLeft, 0, roadLeft + road.width, 0);
     roadGrad.addColorStop(0, '#1a1a3a');
     roadGrad.addColorStop(0.2, '#252555');
@@ -727,7 +696,6 @@ function drawRoad() {
     ctx.fillStyle = roadGrad;
     ctx.fillRect(roadLeft, 0, road.width, canvas.height);
     
-    // Road edges with neon glow
     ctx.strokeStyle = '#00f5ff';
     ctx.lineWidth = 5;
     ctx.shadowBlur = 25;
@@ -745,7 +713,6 @@ function drawRoad() {
     
     ctx.shadowBlur = 0;
     
-    // Lane markings
     const laneWidth = road.width / road.lanes;
     ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
     ctx.lineWidth = 4;
@@ -780,17 +747,14 @@ function drawObstacle3D(obs) {
         ctx.rotate(obs.rotation);
     }
     
-    // Shadow
     ctx.fillStyle = 'rgba(0, 0, 0, 0.4)';
     ctx.beginPath();
     ctx.ellipse(5, h/2 + 5, w/2, d/4, 0, 0, Math.PI * 2);
     ctx.fill();
     
-    // Front face
     ctx.fillStyle = obs.color;
     ctx.fillRect(-w/2, -h/2, w, h);
     
-    // Top face
     ctx.fillStyle = obs.topColor;
     ctx.beginPath();
     ctx.moveTo(-w/2, -h/2);
@@ -800,7 +764,6 @@ function drawObstacle3D(obs) {
     ctx.closePath();
     ctx.fill();
     
-    // Right face
     ctx.fillStyle = shadeColor(obs.color, -20);
     ctx.beginPath();
     ctx.moveTo(w/2, -h/2);
@@ -810,12 +773,10 @@ function drawObstacle3D(obs) {
     ctx.closePath();
     ctx.fill();
     
-    // Outline
     ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
     ctx.lineWidth = 2;
     ctx.strokeRect(-w/2, -h/2, w, h);
     
-    // Details
     if (obs.type.startsWith('car') || obs.type === 'truck') {
         ctx.fillStyle = 'rgba(100, 200, 255, 0.5)';
         ctx.fillRect(-w/2 + 6, -h/2 + 8, w - 12, h * 0.25);
@@ -895,13 +856,11 @@ function drawCar3D() {
     const h = car.height;
     const d = 35;
     
-    // Shadow
     ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
     ctx.beginPath();
     ctx.ellipse(8, h/2 + 10, w/1.8, d/3, 0, 0, Math.PI * 2);
     ctx.fill();
     
-    // Body base
     const bodyGrad = ctx.createLinearGradient(-w/2, 0, w/2, 0);
     bodyGrad.addColorStop(0, '#1155dd');
     bodyGrad.addColorStop(0.3, '#2277ff');
@@ -914,7 +873,6 @@ function drawCar3D() {
     ctx.roundRect(-w/2, -h/2, w, h, 8);
     ctx.fill();
     
-    // Hood
     ctx.fillStyle = '#4499ff';
     ctx.beginPath();
     ctx.moveTo(-w/2 + 5, -h/2);
@@ -924,7 +882,6 @@ function drawCar3D() {
     ctx.closePath();
     ctx.fill();
     
-    // Side
     ctx.fillStyle = '#1144aa';
     ctx.beginPath();
     ctx.moveTo(w/2, -h/2 + 10);
@@ -934,7 +891,6 @@ function drawCar3D() {
     ctx.closePath();
     ctx.fill();
     
-    // Windshield
     const windGrad = ctx.createLinearGradient(0, -h/2, 0, -h/2 + h*0.35);
     windGrad.addColorStop(0, 'rgba(100, 200, 255, 0.8)');
     windGrad.addColorStop(1, 'rgba(50, 150, 200, 0.5)');
@@ -943,18 +899,15 @@ function drawCar3D() {
     ctx.roundRect(-w/2 + 8, -h/2 + 12, w - 16, h * 0.32, 4);
     ctx.fill();
     
-    // Cockpit
     ctx.fillStyle = '#0a0a30';
     ctx.beginPath();
     ctx.roundRect(-w/2 + 10, -h/2 + h*0.35, w - 20, h * 0.3, 3);
     ctx.fill();
     
-    // Windows
     ctx.fillStyle = 'rgba(80, 180, 255, 0.6)';
     ctx.fillRect(-w/2 + 3, -h/2 + 20, 5, h * 0.35);
     ctx.fillRect(w/2 - 8, -h/2 + 20, 5, h * 0.35);
     
-    // Headlights
     ctx.fillStyle = '#ffffff';
     ctx.shadowBlur = 30;
     ctx.shadowColor = '#ffffff';
@@ -965,7 +918,6 @@ function drawCar3D() {
     ctx.roundRect(w/2 - 20, -h/2 + 5, 14, 10, 3);
     ctx.fill();
     
-    // Taillights
     ctx.fillStyle = '#ff0044';
     ctx.shadowColor = '#ff0044';
     ctx.beginPath();
@@ -977,7 +929,6 @@ function drawCar3D() {
     
     ctx.shadowBlur = 0;
     
-    // Engine glow
     if (car.speed > 100) {
         const intensity = (car.speed - 100) / 100;
         ctx.fillStyle = `rgba(255, 100, 50, ${intensity * 0.8})`;
@@ -999,7 +950,6 @@ function drawCar3D() {
         ctx.fill();
     }
     
-    // Shield
     if (hasActiveBonus('shield')) {
         ctx.strokeStyle = 'rgba(255, 255, 0, 0.6)';
         ctx.lineWidth = 4;
@@ -1011,7 +961,6 @@ function drawCar3D() {
         ctx.shadowBlur = 0;
     }
     
-    // Neon outline
     ctx.strokeStyle = '#00f5ff';
     ctx.lineWidth = 2;
     ctx.shadowBlur = 15;
@@ -1199,14 +1148,10 @@ function handleWheelMove(e) {
     e.preventDefault();
     const touch = e.touches[0];
     const dx = touch.clientX - wheelCenter.x;
-    
-    // Clamp movement visually
     const maxDist = 40;
     const clampedX = Math.max(-maxDist, Math.min(maxDist, dx));
     
     wheelStick.style.transform = `translate(-50%, -50%) translateX(${clampedX}px)`;
-    
-    // Set input
     wheelInput.x = clampedX;
 }
 

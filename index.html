@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Endless Racer 3D</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="gameContainer">
+        <canvas id="gameCanvas"></canvas>
+        
+        <div id="hud">
+            <div class="hud-left">
+                <div class="hud-panel">
+                    <div class="hud-label" data-lang="distance">Дистанция</div>
+                    <div class="hud-value" id="distance">0.0 km</div>
+                </div>
+                <div class="hud-panel" id="fuelGauge">
+                    <div class="hud-label" data-lang="fuel">⛽ Топливо</div>
+                    <div id="fuelBar">
+                        <div id="fuelFill" style="width: 100%"></div>
+                    </div>
+                    <div id="fuelText">100%</div>
+                </div>
+            </div>
+            
+            <div class="hud-center">
+                <div id="speedometer">
+                    <div id="speedNeedle"></div>
+                    <div id="speedValue">0</div>
+                    <div id="speedUnit">KM/H</div>
+                </div>
+                <div id="activeBonuses"></div>
+            </div>
+            
+            <div class="hud-right">
+                <div class="hud-panel">
+                    <div class="hud-label" data-lang="record">🏆 Рекорд</div>
+                    <div class="hud-value" id="recordDisplay">0.0 km</div>
+                </div>
+            </div>
+        </div>
+        
+        <div id="mobileControls" class="controls-touch">
+            <div class="touch-zone" id="touchLeft">
+                <span class="touch-icon">◀</span>
+            </div>
+            <div class="touch-zone" id="touchRight">
+                <span class="touch-icon">▶</span>
+            </div>
+            <div class="touch-brake" id="touchBrake">
+                <span class="touch-icon">🛑</span>
+            </div>
+        </div>
+
+        <div id="mobileWheelControls" class="controls-wheel" style="display: none;">
+            <div id="virtualWheelBase">
+                <div id="virtualWheel"></div>
+            </div>
+            <div class="touch-brake" id="wheelBrake">
+                <span class="touch-icon">🛑</span>
+            </div>
+        </div>
+        
+        <div class="screen active" id="startScreen">
+            <div class="lang-switch">
+                <button class="btn-lang active" id="langRu">RU</button>
+                <button class="btn-lang" id="langEn">EN</button>
+            </div>
+            <h1 class="game-title">ENDLESS RACER</h1>
+            <p class="subtitle" data-lang="subtitle">Бесконечная гонка</p>
+            <div class="record-display">
+                <div class="record-label" data-lang="bestResult">🏆 Лучший результат</div>
+                <div class="record-value" id="menuRecord">0.0 km</div>
+            </div>
+            <div class="menu-buttons">
+                <button class="btn" id="startBtn" data-lang="start">▶ СТАРТ</button>
+                <div class="menu-row">
+                    <button class="btn btn-small btn-secondary" id="controlModeBtn" data-lang="modeTouch">📱 Управление: Тач</button>
+                    <button class="btn btn-small btn-secondary" id="soundBtn" data-lang="sound">🔊 Звук</button>
+                    <button class="btn btn-small btn-secondary" id="fullscreenBtn" data-lang="screen">⛶ Экран</button>
+                </div>
+            </div>
+            <div class="controls-info" id="pcControls">
+                <h3 data-lang="controlsTitle">Управление</h3>
+                <p>
+                    <span class="key">W</span><span class="key">↑</span> <span data-lang="gas">Газ</span>
+                    <span class="key">S</span><span class="key">↓</span> <span data-lang="brake">Тормоз</span>
+                    <span class="key">A</span><span class="key">←</span><span class="key">D</span><span class="key">→</span> <span data-lang="turn">Повороты</span><br>
+                    <span class="key">SPACE</span> <span data-lang="handbrake">Ручник</span>
+                    <span class="key">ESC</span> <span data-lang="pause">Пауза</span>
+                </p>
+            </div>
+        </div>
+        
+        <div class="screen" id="pauseScreen">
+            <h2 class="game-title" style="font-size: clamp(28px,6vw,48px);" data-lang="pauseTitle">ПАУЗА</h2>
+            <div class="menu-buttons">
+                <button class="btn" id="resumeBtn" data-lang="resume">▶ ПРОДОЛЖИТЬ</button>
+                <button class="btn btn-secondary" id="restartPause" data-lang="restart">↺ РЕСТАРТ</button>
+                <button class="btn btn-secondary" id="menuBtn" data-lang="menu">☰ МЕНЮ</button>
+            </div>
+        </div>
+        
+        <div class="screen" id="gameOverScreen">
+            <h1 class="game-over-title" data-lang="gameOver">ИГРА ОКОНЧЕНА</h1>
+            <div class="score-label" data-lang="distance">ДИСТАНЦИЯ</div>
+            <div class="final-score" id="finalDistance">0.0 km</div>
+            <div class="new-record" id="newRecordText" style="display:none;" data-lang="newRecord">🏆 НОВЫЙ РЕКОРД! 🏆</div>
+            <div class="stats-row">
+                <div class="stat">
+                    <div class="stat-label" data-lang="maxSpeed">Макс. скорость</div>
+                    <div class="stat-value" id="finalSpeed">0 km/h</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-label" data-lang="collectedFuel">Собрано топлива</div>
+                    <div class="stat-value" id="finalFuel">0</div>
+                </div>
+            </div>
+            <div class="menu-buttons" style="margin-top:20px;">
+                <button class="btn" id="restartBtn" data-lang="again">↺ ЕЩЁ РАЗ</button>
+                <button class="btn btn-secondary" id="menuBtn2" data-lang="menu">☰ МЕНЮ</button>
+            </div>
+        </div>
+    </div>
+    <script src="game.js"></script>
+</body>
+</html>

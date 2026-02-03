@@ -235,8 +235,8 @@ body {
     transition: width 0.1s;
 }
 
-/* NEW MOBILE CONTROLS (BIG BUTTONS) */
-/* Скрыты по умолчанию, включаются через JS если isMobile */
+/* MOBILE CONTROLS */
+/* Важно: display: none по умолчанию, JS переключает на flex/block */
 #mobileControls, #mobileWheelControls {
     display: none; 
 }
@@ -263,6 +263,7 @@ body {
     align-items: center;
     transition: all 0.1s;
     backdrop-filter: blur(5px);
+    pointer-events: auto; /* Важно */
 }
 
 .touch-btn:active {
@@ -281,6 +282,7 @@ body {
     align-items: center;
     transition: all 0.1s;
     backdrop-filter: blur(5px);
+    pointer-events: auto;
 }
 
 .touch-brake-btn:active {
@@ -312,6 +314,7 @@ body {
     border: 2px solid var(--neon-cyan);
     border-radius: 50%;
     touch-action: none;
+    pointer-events: auto;
 }
 
 #virtualWheel {
@@ -338,6 +341,7 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
+    pointer-events: auto;
 }
 
 /* Screens Styles */

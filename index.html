@@ -1,18 +1,22 @@
-<!DOCTYPE html><html lang="ru"><head>
+<!DOCTYPE html>
+<html lang="ru">
+<head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>Endless Racer 3D</title>
-    <link rel="stylesheet" href="style.css"></head><body>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
     <div id="gameContainer">
         <canvas id="gameCanvas"></canvas>
         
         <div id="hud">
             <div class="hud-left">
-                <div class="hud-panel large-panel">
+                <div class="hud-panel">
                     <div class="hud-label" data-lang="distance">Дистанция</div>
                     <div class="hud-value" id="distance">0.0 km</div>
                 </div>
-                <div class="hud-panel large-panel" id="fuelGauge">
+                <div class="hud-panel" id="fuelGauge">
                     <div class="hud-label" data-lang="fuel">⛽ Топливо</div>
                     <div id="fuelBar">
                         <div id="fuelFill" style="width: 100%"></div>
@@ -31,30 +35,26 @@
             </div>
             
             <div class="hud-right">
-                <div class="hud-panel large-panel">
+                <div class="hud-panel">
                     <div class="hud-label" data-lang="record">🏆 Рекорд</div>
                     <div class="hud-value" id="recordDisplay">0.0 km</div>
-                </div>
-                <div class="hud-panel large-panel" style="border-color: var(--neon-red);">
-                    <div class="hud-label">ЖИЗНИ</div>
-                    <div class="lives-display" id="livesDisplay">❤️❤️❤️</div>
                 </div>
             </div>
         </div>
         
         <div id="mobileControls" class="controls-touch">
-            <div class="touch-btn" id="touchLeft">
+            <div class="touch-zone" id="touchLeft">
                 <span class="touch-icon">◀</span>
             </div>
-            <div class="touch-brake-btn" id="touchBrake">
-                <span class="touch-icon-small">🛑</span>
-            </div>
-            <div class="touch-btn" id="touchRight">
+            <div class="touch-zone" id="touchRight">
                 <span class="touch-icon">▶</span>
+            </div>
+            <div class="touch-brake" id="touchBrake">
+                <span class="touch-icon">🛑</span>
             </div>
         </div>
 
-        <div id="mobileWheelControls" class="controls-wheel">
+        <div id="mobileWheelControls" class="controls-wheel" style="display: none;">
             <div id="virtualWheelBase">
                 <div id="virtualWheel"></div>
             </div>
@@ -124,4 +124,6 @@
             </div>
         </div>
     </div>
-    <script src="game.js"></script></body></html>
+    <script src="game.js"></script>
+</body>
+</html>
